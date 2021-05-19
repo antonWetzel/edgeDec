@@ -137,6 +137,14 @@ var graph;
                 ctx.drawImage(input, 0, 0);
             }
         }
+        edit(key) {
+            if (key == 'd') {
+                var link = document.createElement('a');
+                link.download = 'edgeDec.png';
+                link.href = this.result.toDataURL();
+                link.click();
+            }
+        }
     }
     class Operator extends drawable {
         constructor(l, w, h, result) {

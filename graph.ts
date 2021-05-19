@@ -194,6 +194,14 @@ namespace graph {
 				ctx.drawImage(input, 0, 0)
 			}
 		}
+		edit(key: string) {
+			if (key == 'd') {
+				var link = document.createElement('a');
+				link.download = 'edgeDec.png';
+				link.href = this.result.toDataURL()
+				link.click();
+			}
+		}
 	}
 
 	abstract class Operator extends drawable {
