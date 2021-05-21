@@ -13,7 +13,6 @@ var graph;
     let screen;
     let all;
     const border = 5;
-    let animation = 0;
     class drawable {
         constructor(l, w, h, result) {
             this.x = screen.canvas.width * 1 / 6 + w;
@@ -416,7 +415,6 @@ var graph;
         document.body.onresize(new UIEvent(""));
         all = [];
         setInterval(draw, 1000 / 60);
-        setInterval(update, 1000 / 30);
     }
     graph.setup = setup;
     function addCustomOperator() {
@@ -589,7 +587,6 @@ var graph;
     }
     graph.addDisplay = addDisplay;
     function draw() {
-        animation = (animation + 60 / 1000) % 1;
         screen.fillStyle = color.background;
         let w = document.body.clientWidth;
         let h = document.body.clientHeight;
@@ -604,15 +601,12 @@ var graph;
         }
         screen.stroke();
         for (let i = 0; i < all.length; i++) {
+            all[i].update();
+        }
+        for (let i = 0; i < all.length; i++) {
             all[i].draw();
         }
     }
-    function update() {
-        for (let i = 0; i < all.length; i++) {
-            all[i].update();
-        }
-    }
-    graph.update = update;
     function arrow(s, d) {
         let sx = s.x;
         let sy = s.y;
@@ -624,8 +618,9 @@ var graph;
         let dirX = diffX / len;
         let dirY = diffY / len;
         let amount = len / 4;
-        sx += diffX / amount * animation;
-        sy += diffY / amount * animation;
+        let time = (new Date().getTime() % 300) / 300;
+        sx += diffX / amount * time;
+        sy += diffY / amount * time;
         for (let i = 0; i <= amount - 1; i++) {
             screen.moveTo(sx + dirY, sy - dirX);
             screen.lineTo(sx + 3 * dirX, sy + 3 * dirY);
