@@ -128,7 +128,7 @@ document.body.onmouseup = function (ev) {
     }
 };
 function addOperator() {
-    let text = "Please enter shader name or number";
+    let text = "Please enter shader name";
     let allShaders = Object.keys(shaders.all);
     for (let i = 0; i < allShaders.length; i++) {
         text += "\n  " + (i + 1).toString() + ": " + allShaders[i];

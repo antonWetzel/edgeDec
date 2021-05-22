@@ -193,9 +193,9 @@ namespace graph {
 			}
 		}
 		edit(key: string) {
-			if (key == 'd') {
+			if (key == 'h') {
 				var link = document.createElement('a');
-				link.download = 'edgeDec.png';
+				link.download = 'display.png';
 				link.href = this.result.toDataURL()
 				link.click();
 			}
@@ -294,7 +294,7 @@ namespace graph {
 				if (i == this.index) {
 					s += ">"
 				}
-				s += this.param[i] + ": " + this.values[i].toFixed(2)
+				s += this.param[i] + ": " + this.values[i].toFixed(3)
 				if (i == this.index) {
 					s += "<"
 				}
@@ -305,6 +305,13 @@ namespace graph {
 		}
 
 		edit(key: string) {
+			if (key == 'h') {
+				var link = document.createElement('a');
+				link.download = this.name + '.png';
+				link.href = this.result.toDataURL()
+				link.click();
+				return
+			}
 			if (this.param.length == 0) {
 				return
 			}
@@ -321,16 +328,16 @@ namespace graph {
 				let x: number
 				switch (key) {
 				case "q":
-					x = -0.01
+					x = -1/250
 					break
 				case "a":
-					x = -0.1
+					x = -10/250
 					break
 				case "e":
-					x = 0.01
+					x = 1/250
 					break
 				case "d":
-					x = 0.1
+					x = 10/250
 				}
 				this.values[this.index] += x
 				if (this.values[this.index] < 0) { this.values[this.index] = 0 }
@@ -395,6 +402,12 @@ namespace graph {
 
 		edit(key: string) {
 			switch (key) {
+			case 'h':
+				var link = document.createElement('a');
+				link.download = 'matrix.png';
+				link.href = this.result.toDataURL()
+				link.click();
+				break
 			case 'w':
 				this.selectY -= 1
 				if (this.selectY < 0) { this.selectY = this.values.length-1}
