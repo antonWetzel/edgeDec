@@ -13,12 +13,14 @@ namespace graph {
 	let screen: CanvasRenderingContext2D
 	let all: Array<drawable>
 	let gl: WebGLRenderingContext
-
+	let nothingProgram: WebGLProgram
 	const border = 5
 
 	export abstract class drawable {
 		
-		result: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement
+		result: WebGLTexture
+		resultW: number
+		resultH: number
 
 		x: number
 		y: number
@@ -30,7 +32,7 @@ namespace graph {
 
 		selected: boolean
 
-		constructor(l: number, w: number, h: number, result: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement) {
+		constructor(l: number, w: number, h: number, result: WebGLTexture, resultW: number, resultH: number) {
 			this.x = screen.canvas.width * 1/6 + w
 			this.y = screen.canvas.height * 1/6 + h
 			this.w = w
@@ -39,6 +41,8 @@ namespace graph {
 			this.result = result
 			this.selected = false
 			this.l = l
+			this.resultW = resultW
+			this.resultH = resultH
 		}
 
 		addInput(x: drawable): void {
@@ -54,10 +58,7 @@ namespace graph {
 			}
 		}
 
-		abstract fill(): void
-		update(): void {
-			//may be overwritten by implementation
-		}
+		abstract update(): void
 		edit(_key: string): void {
 			//may be overwritten by implementation
 		}
@@ -69,7 +70,7 @@ namespace graph {
 				this.drawRect(color.boxNormal, true)
 			}
 			this.drawRect(color.boxBackground, false)
-			this.fill()
+			this.update()
 		}
 	
 		inside(x: number, y:number): boolean {
@@ -130,74 +131,112 @@ namespace graph {
 		}
 	}
 
-	class VideoSource extends drawable {
+	function createTexture(src: TexImageSource): WebGLTexture {
+		let texture = gl.createTexture()
+		if (texture == null) {
+			console.log("texture error")
+			return 0
+		}
+		gl.bindTexture(gl.TEXTURE_2D, texture)
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, src)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+		return texture
+	}
 
-		result: HTMLVideoElement
+	class VideoSource extends drawable {
+		vid: HTMLVideoElement
 
 		constructor(vid: HTMLVideoElement) {
 			vid.width = vid.videoWidth
 			vid.height = vid.videoHeight
-			super(0, vid.width / 2, vid.height / 2, vid)
-			this.result = vid
+			super(0, vid.width / 2, vid.height / 2, createTexture(vid), vid.width, vid.height)
+			this.vid = vid
 		}
 
-		fill() {
-			this.drawImage(this.result)
+		update() {
+			gl.bindTexture(gl.TEXTURE_2D, this.result)
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.vid)
+			this.drawImage(this.vid)
 		}
 		edit(key: string) {
 			if (key == "m") {
-				this.result.volume = 1- this.result.volume
+				this.vid.volume = 1- this.vid.volume
 			}
 		}
 	}
 
 	class ImageSource extends drawable {
 
+		img: HTMLImageElement
+
 		constructor(img: HTMLImageElement) {
-			super(0, img.width / 2, img.height / 2, img)
+			super(0, img.width / 2, img.height / 2, createTexture(img), img.width, img.height)
+			this.img = img
 		}
 
-		fill() {
-			this.drawImage(this.result)
+		update() {
+			this.drawImage(this.img)
 		}
 	}
 
 	class Display extends drawable {
 
-		result: HTMLCanvasElement
-
 		constructor() {
-			let canvas = document.createElement("canvas")
-			super(1, 100, 100, canvas)
-			this.result = canvas
+			super(1, 100, 100, createTexture(gl.canvas), 200, 200)
 		}
 
-		fill(): void {
-			this.drawImage(this.result)
-		}
 		update() {
-			if (this.inputs.length == 1) {
-				let input = this.inputs[0].result
-				if (this.result.width != input.width) {
-					this.result.width = input.width
-					this.w = input.width / 2
-				}
-				if (this.result.height != input.height) {
-					this.result.height = input.height
-					this.h = input.height / 2
-				}
-				let ctx = this.result.getContext("2d")
-				if (ctx == null) {
-					return
-				}
-				ctx.drawImage(input, 0, 0)
+			if (this.inputs.length == 0) {
+				return
 			}
+			gl.useProgram(nothingProgram)
+
+			let input = this.inputs[0]
+			let update = false
+			if (this.resultW != input.resultW) {
+				this.resultW = input.resultW
+				this.w = input.resultW / 2
+				update = true
+			}
+			if (this.resultH != input.resultH) {
+				this.resultH = input.resultH
+				this.h = input.resultH / 2
+				update = true
+			}
+			if (gl.canvas.width != input.resultW) {
+				gl.canvas.width = input.resultW
+				update = true
+			}
+			if (gl.canvas.height != input.resultH) {
+				gl.canvas.height = input.resultH
+				update = true
+			}
+			if (update) {
+				gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+			}
+			gl.activeTexture(gl.TEXTURE0)
+			let loc = gl.getUniformLocation(nothingProgram, "texture")
+			if (loc != null) {
+				gl.uniform1i(loc, 0)
+			}
+			gl.activeTexture(gl.TEXTURE0)
+			gl.bindTexture(gl.TEXTURE_2D, input.result)
+			gl.drawArrays(gl.TRIANGLES, 0, 6)
+			gl.finish()
+			gl.bindTexture(gl.TEXTURE_2D, this.result)
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, gl.canvas)
+			this.drawImage(gl.canvas)
 		}
+
 		edit(key: string) {
 			if (key == 'h') {
-				var link = document.createElement('a');
+				let link = document.createElement('a');
 				link.download = 'display.png';
-				link.href = this.result.toDataURL()
+				this.update()
+				link.href = (gl.canvas as HTMLCanvasElement).toDataURL()
 				link.click();
 			}
 		}
@@ -205,79 +244,60 @@ namespace graph {
 
 	abstract class Operator extends drawable {
 
-		result: HTMLCanvasElement
 		program: WebGLProgram
 		displayName: string
 
 		constructor(l: number, w: number, h: number, program: WebGLProgram) {
-			let canvas = document.createElement("canvas")
-			super(l, w, h, canvas)
-			this.result = canvas
+			super(l, w, h, createTexture(gl.canvas), 200, 200)
 			this.program = program
 			this.displayName = ""
 		}
-		fill(): void {
-			this.drawText(this.displayName)
-		}
+
 		update(): void {
+			this.drawText(this.displayName)
 			if (this.inputs.length == 0) {
 				return
 			}
 			gl.useProgram(this.program)
 
-			let input = this.inputs[0].result
+			let input = this.inputs[0]
 			let update = false
-
-			if (this.result.width != input.width) {
-				this.result.width = input.width
+			if (this.resultW != input.resultW) {
+				this.resultW = input.resultW
 				update = true
 			}
-			if (this.result.height != input.height) {
-				this.result.height = input.height
+			if (this.resultH != input.resultH) {
+				this.resultH = input.resultH
 				update = true
 			}
-			if (gl.canvas.width != this.result.width) {
-				gl.canvas.width = this.result.width
+			if (gl.canvas.width != input.resultW) {
+				gl.canvas.width = input.resultW
 				update = true
 			}
-			if (gl.canvas.height != this.result.height) {
-				gl.canvas.height = this.result.height
+			if (gl.canvas.height != input.resultH) {
+				gl.canvas.height = input.resultH
 				update = true
 			}
 			if (update) {
 				gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 				let size = gl.getUniformLocation(this.program, "size")
 				if (size != null) {
-					gl.uniform2f(size, this.result.width, this.result.height)
+					gl.uniform2f(size, gl.canvas.width, gl.canvas.height)
 				}
 			}
 			
-			let textures = []
 			for (let i = 0; i < this.inputs.length; i++) {
 				gl.activeTexture(gl.TEXTURE0 + i)
 				let loc = gl.getUniformLocation(this.program, "texture"+i.toString())
-				if (loc != 0) {
+				if (loc != null) {
 					gl.uniform1i(loc, i)
 				}
-
-				let texture = gl.createTexture();
-				gl.bindTexture(gl.TEXTURE_2D, texture)
-				gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
-				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.inputs[i].result)
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-				textures.push(texture)
+				gl.bindTexture(gl.TEXTURE_2D, this.inputs[i].result)
 			}
 			gl.drawArrays(gl.TRIANGLES, 0, 6)
-			for (let j = 0; j < textures.length; j++) {
-				gl.deleteTexture(textures[j])
-			}
-			let ctx = this.result.getContext("2d")
-			if (ctx == null) {
-				return
-			}
-			ctx.drawImage(gl.canvas, 0, 0, gl.canvas.width, gl.canvas.height)
+			gl.finish()
+			gl.bindTexture(gl.TEXTURE_2D, this.result)
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, gl.canvas)
 		}
 	}
 
@@ -316,17 +336,16 @@ namespace graph {
 		}
 
 		edit(key: string) {
-			if (key == 'h') {
-				var link = document.createElement('a');
-				link.download = this.name + '.png';
-				link.href = this.result.toDataURL()
-				link.click();
-				return
-			}
 			if (this.param.length == 0) {
 				return
 			}
-			if (key == "w" || key == "s") {
+			if (key == 'h') {
+				let link = document.createElement('a');
+				link.download = 'display.png';
+				this.update()
+				link.href = (gl.canvas as HTMLCanvasElement).toDataURL()
+				link.click();
+			} else if (key == "w" || key == "s") {
 				if (key == "w") {
 					this.index -= 1
 					if (this.index < 0) { this.index = this.param.length-1 }
@@ -410,10 +429,14 @@ namespace graph {
 		edit(key: string) {
 			switch (key) {
 			case 'h':
-				var link = document.createElement('a');
-				link.download = 'matrix.png';
-				link.href = this.result.toDataURL()
-				link.click();
+				if (this.inputs.length == 0) {
+					return
+				}
+				let link = document.createElement('a')
+				link.download = 'display.png'
+				this.update()
+				link.href = (gl.canvas as HTMLCanvasElement).toDataURL()
+				link.click()
 				break
 			case 'w':
 				this.selectY -= 1
@@ -497,14 +520,19 @@ namespace graph {
 		all = []
 
 		
-		canvas = document.createElement("canvas")
-		let glt = canvas.getContext("webgl")
+		let calc = document.createElement("canvas")
+		let glt = calc.getContext("webgl")
 		if (glt == null) {
 			console.log("context not found")
 			return
 		}
 		gl = glt
-
+		let x = createWebGlProgram(shaders.all["nothing"])
+		if (x == null) {
+			console.log("error with nothing program")
+			return
+		}
+		nothingProgram = x.program
 		setInterval(draw, 1000/60)
 	}
 
@@ -532,7 +560,7 @@ namespace graph {
 	function createWebGlProgram(programData: string): {"program": WebGLProgram, "texCount": number, "param": string[]} | null {
 		let param: string[] = []
 		let texCount = 0
-		let split = programData.split(/[\s;]+/);
+		let split = programData.split(/[\s;]+/)
 		for (let i = 0; i < split.length-2; i++) { //last 2 can not be a full uniform decleration
 			if (split[i] == "uniform") {
 				if (split[i+1] == "sampler2D") {
@@ -543,15 +571,15 @@ namespace graph {
 			}
 		}
 
-		let program = gl.createProgram();
+		let program = gl.createProgram()
 		if (program == null) {
 			console.log("could not create program")
 			return null
 		}
-		var datas = [vertexShaderData, programData]
-		var types = [gl.VERTEX_SHADER, gl.FRAGMENT_SHADER]
+		let datas = [vertexShaderData, programData]
+		let types = [gl.VERTEX_SHADER, gl.FRAGMENT_SHADER]
 		for (let  i = 0; i < datas.length; i++) {
-			let shader = gl.createShader(types[i]);
+			let shader = gl.createShader(types[i])
 			if (shader == null) {
 				console.log("could not create shader")
 				return null
@@ -572,7 +600,7 @@ namespace graph {
 			return null
 		}
 		gl.useProgram(program)
-		const buffer = gl.createBuffer();
+		const buffer = gl.createBuffer()
 		if (buffer == null) {
 			console.log("could not create buffer")
 			return null
@@ -600,7 +628,8 @@ namespace graph {
 			gl.FLOAT,
 			false,
 			0,
-			0);
+			0
+		)
 		gl.enableVertexAttribArray(pos)
 		return {"program": program, "texCount": texCount, "param": param}
 	}
@@ -709,9 +738,6 @@ namespace graph {
 			}
 		}
 		screen.stroke()
-		for (let i = 0; i < all.length; i++) {
-			all[i].update()
-		}
 		for (let i = 0; i < all.length; i++) {
 			all[i].draw()
 		}

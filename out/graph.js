@@ -13,9 +13,10 @@ var graph;
     let screen;
     let all;
     let gl;
+    let nothingProgram;
     const border = 5;
     class drawable {
-        constructor(l, w, h, result) {
+        constructor(l, w, h, result, resultW, resultH) {
             this.x = screen.canvas.width * 1 / 6 + w;
             this.y = screen.canvas.height * 1 / 6 + h;
             this.w = w;
@@ -24,6 +25,8 @@ var graph;
             this.result = result;
             this.selected = false;
             this.l = l;
+            this.resultW = resultW;
+            this.resultH = resultH;
         }
         addInput(x) {
             for (let i = 0; i < this.inputs.length; i++) {
@@ -37,9 +40,6 @@ var graph;
                 this.inputs.shift();
             }
         }
-        update() {
-            //may be overwritten by implementation
-        }
         edit(_key) {
             //may be overwritten by implementation
         }
@@ -51,7 +51,7 @@ var graph;
                 this.drawRect(color.boxNormal, true);
             }
             this.drawRect(color.boxBackground, false);
-            this.fill();
+            this.update();
         }
         inside(x, y) {
             return (this.x - this.w <= x && x < this.x + this.w &&
@@ -86,132 +86,151 @@ var graph;
         }
     }
     graph.drawable = drawable;
+    function createTexture(src) {
+        let texture = gl.createTexture();
+        if (texture == null) {
+            console.log("texture error");
+            return 0;
+        }
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, src);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        return texture;
+    }
     class VideoSource extends drawable {
         constructor(vid) {
             vid.width = vid.videoWidth;
             vid.height = vid.videoHeight;
-            super(0, vid.width / 2, vid.height / 2, vid);
-            this.result = vid;
+            super(0, vid.width / 2, vid.height / 2, createTexture(vid), vid.width, vid.height);
+            this.vid = vid;
         }
-        fill() {
-            this.drawImage(this.result);
+        update() {
+            gl.bindTexture(gl.TEXTURE_2D, this.result);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.vid);
+            this.drawImage(this.vid);
         }
         edit(key) {
             if (key == "m") {
-                this.result.volume = 1 - this.result.volume;
+                this.vid.volume = 1 - this.vid.volume;
             }
         }
     }
     class ImageSource extends drawable {
         constructor(img) {
-            super(0, img.width / 2, img.height / 2, img);
+            super(0, img.width / 2, img.height / 2, createTexture(img), img.width, img.height);
+            this.img = img;
         }
-        fill() {
-            this.drawImage(this.result);
+        update() {
+            this.drawImage(this.img);
         }
     }
     class Display extends drawable {
         constructor() {
-            let canvas = document.createElement("canvas");
-            super(1, 100, 100, canvas);
-            this.result = canvas;
-        }
-        fill() {
-            this.drawImage(this.result);
+            super(1, 100, 100, createTexture(gl.canvas), 200, 200);
         }
         update() {
-            if (this.inputs.length == 1) {
-                let input = this.inputs[0].result;
-                if (this.result.width != input.width) {
-                    this.result.width = input.width;
-                    this.w = input.width / 2;
-                }
-                if (this.result.height != input.height) {
-                    this.result.height = input.height;
-                    this.h = input.height / 2;
-                }
-                let ctx = this.result.getContext("2d");
-                if (ctx == null) {
-                    return;
-                }
-                ctx.drawImage(input, 0, 0);
+            if (this.inputs.length == 0) {
+                return;
             }
+            gl.useProgram(nothingProgram);
+            let input = this.inputs[0];
+            let update = false;
+            if (this.resultW != input.resultW) {
+                this.resultW = input.resultW;
+                this.w = input.resultW / 2;
+                update = true;
+            }
+            if (this.resultH != input.resultH) {
+                this.resultH = input.resultH;
+                this.h = input.resultH / 2;
+                update = true;
+            }
+            if (gl.canvas.width != input.resultW) {
+                gl.canvas.width = input.resultW;
+                update = true;
+            }
+            if (gl.canvas.height != input.resultH) {
+                gl.canvas.height = input.resultH;
+                update = true;
+            }
+            if (update) {
+                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            }
+            gl.activeTexture(gl.TEXTURE0);
+            let loc = gl.getUniformLocation(nothingProgram, "texture");
+            if (loc != null) {
+                gl.uniform1i(loc, 0);
+            }
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, input.result);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            gl.finish();
+            gl.bindTexture(gl.TEXTURE_2D, this.result);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, gl.canvas);
+            this.drawImage(gl.canvas);
         }
         edit(key) {
             if (key == 'h') {
-                var link = document.createElement('a');
+                let link = document.createElement('a');
                 link.download = 'display.png';
-                link.href = this.result.toDataURL();
+                this.update();
+                link.href = gl.canvas.toDataURL();
                 link.click();
             }
         }
     }
     class Operator extends drawable {
         constructor(l, w, h, program) {
-            let canvas = document.createElement("canvas");
-            super(l, w, h, canvas);
-            this.result = canvas;
+            super(l, w, h, createTexture(gl.canvas), 200, 200);
             this.program = program;
             this.displayName = "";
         }
-        fill() {
-            this.drawText(this.displayName);
-        }
         update() {
+            this.drawText(this.displayName);
             if (this.inputs.length == 0) {
                 return;
             }
             gl.useProgram(this.program);
-            let input = this.inputs[0].result;
+            let input = this.inputs[0];
             let update = false;
-            if (this.result.width != input.width) {
-                this.result.width = input.width;
+            if (this.resultW != input.resultW) {
+                this.resultW = input.resultW;
                 update = true;
             }
-            if (this.result.height != input.height) {
-                this.result.height = input.height;
+            if (this.resultH != input.resultH) {
+                this.resultH = input.resultH;
                 update = true;
             }
-            if (gl.canvas.width != this.result.width) {
-                gl.canvas.width = this.result.width;
+            if (gl.canvas.width != input.resultW) {
+                gl.canvas.width = input.resultW;
                 update = true;
             }
-            if (gl.canvas.height != this.result.height) {
-                gl.canvas.height = this.result.height;
+            if (gl.canvas.height != input.resultH) {
+                gl.canvas.height = input.resultH;
                 update = true;
             }
             if (update) {
                 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
                 let size = gl.getUniformLocation(this.program, "size");
                 if (size != null) {
-                    gl.uniform2f(size, this.result.width, this.result.height);
+                    gl.uniform2f(size, gl.canvas.width, gl.canvas.height);
                 }
             }
-            let textures = [];
             for (let i = 0; i < this.inputs.length; i++) {
                 gl.activeTexture(gl.TEXTURE0 + i);
                 let loc = gl.getUniformLocation(this.program, "texture" + i.toString());
-                if (loc != 0) {
+                if (loc != null) {
                     gl.uniform1i(loc, i);
                 }
-                let texture = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.inputs[i].result);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                textures.push(texture);
+                gl.bindTexture(gl.TEXTURE_2D, this.inputs[i].result);
             }
             gl.drawArrays(gl.TRIANGLES, 0, 6);
-            for (let j = 0; j < textures.length; j++) {
-                gl.deleteTexture(textures[j]);
-            }
-            let ctx = this.result.getContext("2d");
-            if (ctx == null) {
-                return;
-            }
-            ctx.drawImage(gl.canvas, 0, 0, gl.canvas.width, gl.canvas.height);
+            gl.finish();
+            gl.bindTexture(gl.TEXTURE_2D, this.result);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, gl.canvas);
         }
     }
     class ShaderOperator extends Operator {
@@ -241,17 +260,17 @@ var graph;
             this.w = w / 2 + 20;
         }
         edit(key) {
-            if (key == 'h') {
-                var link = document.createElement('a');
-                link.download = this.name + '.png';
-                link.href = this.result.toDataURL();
-                link.click();
-                return;
-            }
             if (this.param.length == 0) {
                 return;
             }
-            if (key == "w" || key == "s") {
+            if (key == 'h') {
+                let link = document.createElement('a');
+                link.download = 'display.png';
+                this.update();
+                link.href = gl.canvas.toDataURL();
+                link.click();
+            }
+            else if (key == "w" || key == "s") {
                 if (key == "w") {
                     this.index -= 1;
                     if (this.index < 0) {
@@ -339,9 +358,13 @@ var graph;
         edit(key) {
             switch (key) {
                 case 'h':
-                    var link = document.createElement('a');
-                    link.download = 'matrix.png';
-                    link.href = this.result.toDataURL();
+                    if (this.inputs.length == 0) {
+                        return;
+                    }
+                    let link = document.createElement('a');
+                    link.download = 'display.png';
+                    this.update();
+                    link.href = gl.canvas.toDataURL();
                     link.click();
                     break;
                 case 'w':
@@ -433,13 +456,19 @@ var graph;
         screen = t;
         document.body.onresize(new UIEvent(""));
         all = [];
-        canvas = document.createElement("canvas");
-        let glt = canvas.getContext("webgl");
+        let calc = document.createElement("canvas");
+        let glt = calc.getContext("webgl");
         if (glt == null) {
             console.log("context not found");
             return;
         }
         gl = glt;
+        let x = createWebGlProgram(shaders.all["nothing"]);
+        if (x == null) {
+            console.log("error with nothing program");
+            return;
+        }
+        nothingProgram = x.program;
         setInterval(draw, 1000 / 60);
     }
     graph.setup = setup;
@@ -483,8 +512,8 @@ var graph;
             console.log("could not create program");
             return null;
         }
-        var datas = [vertexShaderData, programData];
-        var types = [gl.VERTEX_SHADER, gl.FRAGMENT_SHADER];
+        let datas = [vertexShaderData, programData];
+        let types = [gl.VERTEX_SHADER, gl.FRAGMENT_SHADER];
         for (let i = 0; i < datas.length; i++) {
             let shader = gl.createShader(types[i]);
             if (shader == null) {
@@ -623,9 +652,6 @@ var graph;
             }
         }
         screen.stroke();
-        for (let i = 0; i < all.length; i++) {
-            all[i].update();
-        }
         for (let i = 0; i < all.length; i++) {
             all[i].draw();
         }
