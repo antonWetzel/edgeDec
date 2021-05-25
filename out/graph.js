@@ -12,6 +12,7 @@ var graph;
 	}`;
     let screen;
     let all;
+    let gl;
     const border = 5;
     class drawable {
         constructor(l, w, h, result) {
@@ -146,24 +147,23 @@ var graph;
         }
     }
     class Operator extends drawable {
-        constructor(l, w, h, result) {
-            super(l, w, h, result);
-            this.result = result;
+        constructor(l, w, h, program) {
+            let canvas = document.createElement("canvas");
+            super(l, w, h, canvas);
+            this.result = canvas;
+            this.program = program;
             this.displayName = "";
         }
         fill() {
             this.drawText(this.displayName);
         }
         update() {
-            let gl = this.result.getContext("webgl");
-            if (gl == null) {
-                return;
-            }
             if (this.inputs.length == 0) {
                 return;
             }
-            let update = false;
+            gl.useProgram(this.program);
             let input = this.inputs[0].result;
+            let update = false;
             if (this.result.width != input.width) {
                 this.result.width = input.width;
                 update = true;
@@ -172,19 +172,25 @@ var graph;
                 this.result.height = input.height;
                 update = true;
             }
-            let program = gl.getParameter(gl.CURRENT_PROGRAM);
+            if (gl.canvas.width != this.result.width) {
+                gl.canvas.width = this.result.width;
+                update = true;
+            }
+            if (gl.canvas.height != this.result.height) {
+                gl.canvas.height = this.result.height;
+                update = true;
+            }
             if (update) {
-                gl.viewport(0, 0, input.width, input.height);
-                let size = gl.getUniformLocation(program, "size");
+                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+                let size = gl.getUniformLocation(this.program, "size");
                 if (size != null) {
-                    gl.uniform2f(size, input.width, input.height);
+                    gl.uniform2f(size, this.result.width, this.result.height);
                 }
             }
             let textures = [];
-            let programm = gl.getParameter(gl.CURRENT_PROGRAM);
             for (let i = 0; i < this.inputs.length; i++) {
                 gl.activeTexture(gl.TEXTURE0 + i);
-                let loc = gl.getUniformLocation(programm, "texture" + i.toString());
+                let loc = gl.getUniformLocation(this.program, "texture" + i.toString());
                 if (loc != 0) {
                     gl.uniform1i(loc, i);
                 }
@@ -201,13 +207,17 @@ var graph;
             for (let j = 0; j < textures.length; j++) {
                 gl.deleteTexture(textures[j]);
             }
+            let ctx = this.result.getContext("2d");
+            if (ctx == null) {
+                return;
+            }
+            ctx.drawImage(gl.canvas, 0, 0, gl.canvas.width, gl.canvas.height);
         }
     }
     class ShaderOperator extends Operator {
-        constructor(l, name, result, param, values) {
-            super(l, 0, fontHeight * param.length / 2 + 20, result);
+        constructor(l, name, program, param, values) {
+            super(l, 0, fontHeight * param.length / 2 + 20, program);
             this.name = name;
-            this.result = result;
             this.param = param;
             this.values = values;
             this.index = 0;
@@ -278,12 +288,8 @@ var graph;
                 if (this.values[this.index] > 1) {
                     this.values[this.index] = 1;
                 }
-                let gl = this.result.getContext("webgl");
-                if (gl == null) {
-                    return;
-                }
-                let program = gl.getParameter(gl.CURRENT_PROGRAM);
-                let loc = gl.getUniformLocation(program, this.param[this.index]);
+                gl.useProgram(this.program);
+                let loc = gl.getUniformLocation(this.program, this.param[this.index]);
                 if (loc != null) {
                     gl.uniform1f(loc, this.values[this.index]);
                 }
@@ -292,8 +298,8 @@ var graph;
         }
     }
     class MatrixOperator extends Operator {
-        constructor(result, mat) {
-            super(1, 100, 100, result);
+        constructor(program, mat) {
+            super(1, 100, 100, program);
             this.values = mat;
             this.selectX = 0;
             this.selectY = 0;
@@ -396,12 +402,12 @@ var graph;
                     else if (key == "r") {
                         this.force = !this.force;
                     }
-                    let canvas = createWebGLCanvas(createMatrixShader(this.values, this.force)).canvas;
-                    if (canvas == null) {
+                    let x = createWebGlProgram(createMatrixShader(this.values, this.force));
+                    if (x == null) {
                         console.log("error in matrix shader creator");
                         return;
                     }
-                    this.result = canvas;
+                    this.program = x.program;
                     break;
                 default:
                     return;
@@ -427,6 +433,13 @@ var graph;
         screen = t;
         document.body.onresize(new UIEvent(""));
         all = [];
+        canvas = document.createElement("canvas");
+        let glt = canvas.getContext("webgl");
+        if (glt == null) {
+            console.log("context not found");
+            return;
+        }
+        gl = glt;
         setInterval(draw, 1000 / 60);
     }
     graph.setup = setup;
@@ -451,13 +464,7 @@ var graph;
         return x;
     }
     graph.addOperator = addOperator;
-    function createWebGLCanvas(programData) {
-        let canvas = document.createElement("canvas");
-        let gl = canvas.getContext("webgl");
-        if (gl == null) {
-            console.log("context not found");
-            return { "canvas": null, "texCount": 0, "param": [] };
-        }
+    function createWebGlProgram(programData) {
         let param = [];
         let texCount = 0;
         let split = programData.split(/[\s;]+/);
@@ -474,7 +481,7 @@ var graph;
         let program = gl.createProgram();
         if (program == null) {
             console.log("could not create program");
-            return { "canvas": null, "texCount": 0, "param": [] };
+            return null;
         }
         var datas = [vertexShaderData, programData];
         var types = [gl.VERTEX_SHADER, gl.FRAGMENT_SHADER];
@@ -482,27 +489,27 @@ var graph;
             let shader = gl.createShader(types[i]);
             if (shader == null) {
                 console.log("could not create shader");
-                return { "canvas": null, "texCount": 0, "param": [] };
+                return null;
             }
             gl.shaderSource(shader, datas[i]);
             gl.compileShader(shader);
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
                 console.log('An error occurred compiling the shader: ' + gl.getShaderInfoLog(shader));
                 gl.deleteShader(shader);
-                return { "canvas": null, "texCount": 0, "param": [] };
+                return null;
             }
             gl.attachShader(program, shader);
         }
         gl.linkProgram(program);
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
             console.log('Unable to initialize the shader program: ' + gl.getProgramInfoLog(program));
-            return { "canvas": null, "texCount": 0, "param": [] };
+            return null;
         }
         gl.useProgram(program);
         const buffer = gl.createBuffer();
         if (buffer == null) {
             console.log("could not create buffer");
-            return { "canvas": null, "texCount": 0, "param": [] };
+            return null;
         }
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
         const positions = [
@@ -517,22 +524,22 @@ var graph;
         let pos = gl.getAttribLocation(program, "position");
         gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(pos);
-        return { "canvas": canvas, "texCount": texCount, "param": param };
+        return { "program": program, "texCount": texCount, "param": param };
     }
     function createOperator(programData, name, matrix = null) {
-        let { canvas, texCount, param } = createWebGLCanvas(programData);
-        if (canvas == null) {
+        let x = createWebGlProgram(programData);
+        if (x == null) {
             return null;
         }
         let values = [];
-        for (let i = 0; i < param.length; i++) {
+        for (let i = 0; i < x.param.length; i++) {
             values.push(0);
         }
         if (matrix != null) {
-            return new MatrixOperator(canvas, matrix);
+            return new MatrixOperator(x.program, matrix);
         }
         else {
-            return new ShaderOperator(texCount, name, canvas, param, values);
+            return new ShaderOperator(x.texCount, name, x.program, x.param, values);
         }
     }
     async function addWebcam() {
@@ -599,7 +606,10 @@ var graph;
         return dis;
     }
     graph.addDisplay = addDisplay;
+    let time = performance.now();
+    let delay = 60;
     function draw() {
+        let start = performance.now();
         screen.fillStyle = color.background;
         let w = document.body.clientWidth;
         let h = document.body.clientHeight;
@@ -618,6 +628,12 @@ var graph;
         }
         for (let i = 0; i < all.length; i++) {
             all[i].draw();
+        }
+        let end = performance.now();
+        delay = delay * 0.99 + (end - start) * 0.01;
+        if (end - time > 1000 * 5) {
+            console.log("max FPS: ", 1000 / delay);
+            time = end;
         }
     }
     function arrow(s, d) {
