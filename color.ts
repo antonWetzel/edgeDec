@@ -21,13 +21,13 @@ namespace color {
 	}
 	
 	export let dark: config = {
-		boxNormal: "#FFFFFF",
-		boxSelected: "#00FF00",
+		boxNormal: "#333333",
+		boxSelected: "#005500",
 		boxBackground: "#000000",
 
 		background: "#222222",
-		text: "#FFFFFF",
-		arrow: "#FFFFFF",
+		text: "#AAAAAA",
+		arrow: "#444444",
 	}
 
 	export function set(x: config) {

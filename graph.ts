@@ -1,6 +1,6 @@
 namespace graph {
 
-	const fontHeight = 20
+	export const fontHeight = 20
 	const vertexShaderData = `
 	attribute vec2 position;
 	varying vec2 uv;
@@ -498,28 +498,10 @@ namespace graph {
 			this.updateName()
 		}
 	}
-	export function setup() {
-		let canvas = document.createElement("canvas")
-		document.body.onresize = function() {
-			canvas.width = document.body.clientWidth
-			canvas.height = document.body.clientHeight
-			screen.textAlign = "center"
-			screen.textBaseline = "middle"
-			screen.lineWidth = 3
-			screen.font = fontHeight.toString() + "px monospace"
-		}
-		document.body.appendChild(canvas)
-
-		let t = canvas.getContext("2d")
-		if (t == null) {
-			return
-		}
-		screen = t
-
-		document.body.onresize(new UIEvent(""))
+	export function setup(ctx: CanvasRenderingContext2D) {
+		screen = ctx
 		all = []
 
-		
 		let calc = document.createElement("canvas")
 		let glt = calc.getContext("webgl")
 		if (glt == null) {
@@ -720,11 +702,7 @@ namespace graph {
 		return dis
 	}
 
-	let time = performance.now()
-	let delay = 60
-
 	function draw() {
-		let start = performance.now()
 		screen.fillStyle = color.background
 		let w = document.body.clientWidth
 		let h = document.body.clientHeight
@@ -740,12 +718,6 @@ namespace graph {
 		screen.stroke()
 		for (let i = 0; i < all.length; i++) {
 			all[i].draw()
-		}
-		let end = performance.now()
-		delay = delay * 0.99 + (end - start) * 0.01
-		if (end - time > 1000 * 5) {
-			console.log("max FPS: ", 1000  / delay)
-			time = end
 		}
 	}
 

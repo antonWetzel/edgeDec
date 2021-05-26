@@ -1,7 +1,7 @@
 "use strict";
 var graph;
 (function (graph) {
-    const fontHeight = 20;
+    graph.fontHeight = 20;
     const vertexShaderData = `
 	attribute vec2 position;
 	varying vec2 uv;
@@ -81,7 +81,7 @@ var graph;
             screen.fillStyle = color.text;
             let s = text.split("\n");
             for (let i = 0; i < s.length; i++) {
-                screen.fillText(s[i], this.x, this.y + (i - s.length / 2 + 0.5) * fontHeight);
+                screen.fillText(s[i], this.x, this.y + (i - s.length / 2 + 0.5) * graph.fontHeight);
             }
         }
     }
@@ -235,7 +235,7 @@ var graph;
     }
     class ShaderOperator extends Operator {
         constructor(l, name, program, param, values) {
-            super(l, 0, fontHeight * param.length / 2 + 20, program);
+            super(l, 0, graph.fontHeight * param.length / 2 + 20, program);
             this.name = name;
             this.param = param;
             this.values = values;
@@ -353,7 +353,7 @@ var graph;
                 }
             }
             this.w = screen.measureText(this.displayName.split("\n")[0]).width / 2 + 20;
-            this.h = this.values.length * fontHeight;
+            this.h = this.values.length * graph.fontHeight;
         }
         edit(key) {
             switch (key) {
@@ -438,23 +438,8 @@ var graph;
             this.updateName();
         }
     }
-    function setup() {
-        let canvas = document.createElement("canvas");
-        document.body.onresize = function () {
-            canvas.width = document.body.clientWidth;
-            canvas.height = document.body.clientHeight;
-            screen.textAlign = "center";
-            screen.textBaseline = "middle";
-            screen.lineWidth = 3;
-            screen.font = fontHeight.toString() + "px monospace";
-        };
-        document.body.appendChild(canvas);
-        let t = canvas.getContext("2d");
-        if (t == null) {
-            return;
-        }
-        screen = t;
-        document.body.onresize(new UIEvent(""));
+    function setup(ctx) {
+        screen = ctx;
         all = [];
         let calc = document.createElement("canvas");
         let glt = calc.getContext("webgl");
@@ -635,10 +620,7 @@ var graph;
         return dis;
     }
     graph.addDisplay = addDisplay;
-    let time = performance.now();
-    let delay = 60;
     function draw() {
-        let start = performance.now();
         screen.fillStyle = color.background;
         let w = document.body.clientWidth;
         let h = document.body.clientHeight;
@@ -654,12 +636,6 @@ var graph;
         screen.stroke();
         for (let i = 0; i < all.length; i++) {
             all[i].draw();
-        }
-        let end = performance.now();
-        delay = delay * 0.99 + (end - start) * 0.01;
-        if (end - time > 1000 * 5) {
-            console.log("max FPS: ", 1000 / delay);
-            time = end;
         }
     }
     function arrow(s, d) {

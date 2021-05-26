@@ -10,12 +10,12 @@ var color;
         arrow: "#000000",
     };
     color.dark = {
-        boxNormal: "#FFFFFF",
-        boxSelected: "#00FF00",
+        boxNormal: "#333333",
+        boxSelected: "#005500",
         boxBackground: "#000000",
         background: "#222222",
-        text: "#FFFFFF",
-        arrow: "#FFFFFF",
+        text: "#AAAAAA",
+        arrow: "#444444",
     };
     function set(x) {
         color.boxNormal = x.boxNormal;

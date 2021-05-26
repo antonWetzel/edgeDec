@@ -1,8 +1,53 @@
 "use strict";
+let sidebar;
 document.body.onload = function () {
-    graph.setup();
+    let canvas = document.createElement("canvas");
+    canvas.style.display = "block";
+    const ctx = canvas.getContext("2d");
+    if (ctx == null) {
+        return;
+    }
+    sidebar = document.createElement("canvas");
+    sidebar.height = 70;
+    sidebar.style.display = "block";
+    document.body.onresize = function () {
+        canvas.width = document.body.clientWidth;
+        canvas.height = document.body.clientHeight - sidebar.height;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.lineWidth = 3;
+        ctx.font = graph.fontHeight.toString() + "px monospace";
+        drawSidebar();
+    };
+    document.body.onresize(new UIEvent(""));
+    document.body.appendChild(canvas);
+    document.body.appendChild(sidebar);
+    graph.setup(ctx);
     selected = [];
 };
+function drawSidebar() {
+    let sidebarCtx = sidebar.getContext("2d");
+    if (sidebarCtx == null) {
+        console.log("dfsa");
+        return;
+    }
+    sidebar.width = document.body.clientWidth;
+    sidebarCtx.textAlign = "center";
+    sidebarCtx.textBaseline = "middle";
+    sidebarCtx.font = "30px monospace";
+    sidebarCtx.fillStyle = color.boxNormal;
+    sidebarCtx.fillRect(0, 0, sidebar.width, sidebar.height);
+    let names = ["webcam", "file", "shader", "matrix", "display", "template", "color", "delete", "help"];
+    sidebarCtx.fillStyle = color.boxBackground;
+    let diff = sidebar.width / names.length;
+    for (let i = 0; i < names.length; i++) {
+        sidebarCtx.fillRect(diff * i + 5, 5, diff - 10, sidebar.height - 10);
+    }
+    sidebarCtx.fillStyle = color.text;
+    for (let i = 0; i < names.length; i++) {
+        sidebarCtx.fillText(names[i], (i + 0.5) * diff, sidebar.height / 2);
+    }
+}
 function resetSelected(x = null) {
     for (let i = 0; i < selected.length; i++) {
         selected[i].selected = false;
@@ -39,24 +84,17 @@ document.body.onkeydown = async function (ev) {
             break;
         case "7":
             color.advance();
+            drawSidebar();
             break;
+        case "8":
         case "delete":
             for (let i = 0; i < selected.length; i++) {
                 graph.remove(selected[i]);
             }
             selected = [];
             break;
-        case "arrowright":
-            graph.move(1, 0, selected);
-            break;
-        case "arrowleft":
-            graph.move(-1, 0, selected);
-            break;
-        case "arrowup":
-            graph.move(0, -1, selected);
-            break;
-        case "arrowdown":
-            graph.move(0, 1, selected);
+        case "9":
+            alert("TODO: write help text");
             break;
         default:
             if (selected.length == 1) {
@@ -85,6 +123,11 @@ let selected;
 let x = 0;
 let y = 0;
 document.body.onmousedown = function (ev) {
+    if (document.body.clientHeight - ev.pageY < sidebar.height) {
+        let idx = Math.floor((ev.pageX / document.body.clientWidth) * 9);
+        document.body.dispatchEvent(new KeyboardEvent("keydown", { key: (idx + 1).toString() }));
+        return;
+    }
     if (!ev.shiftKey) {
         for (let i = 0; i < selected.length; i++) {
             selected[i].selected = false;
@@ -108,6 +151,9 @@ document.body.onmousedown = function (ev) {
     selected.push(c);
 };
 document.body.onmouseup = function (ev) {
+    if (document.body.clientHeight - ev.pageY < sidebar.height) {
+        return;
+    }
     let dest = graph.findAt(ev.pageX, ev.pageY);
     if (dest == null) {
         if (selected.length == 0) {

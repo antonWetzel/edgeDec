@@ -1,0 +1,5 @@
+zoom for single source / display and/or show and hide
+
+zoom for whole image
+
+help text
