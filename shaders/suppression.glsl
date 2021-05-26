@@ -5,33 +5,34 @@ uniform sampler2D texture1;
 uniform vec2 size;
 
 vec2 off(float grad) {
-	vec2 val;
-
-	if (grad < 1.0/12.0) {
-		val = vec2(-1.0, 0.0);
-	} else if (grad < 3.0/12.0) {
-		val = vec2(-1.0, 1.0);
-	} else if (grad < 5.0/12.0) {
-		val = vec2(0.0, 1.0);
-	} else if (grad < 7.0/12.0) {
-		val = vec2(1.0, 1.0);
-	} else if (grad < 9.0/12.0) {
-		val = vec2(1.0, 0.0);
-	} else if (grad < 11.0/12.0) {
-		val = vec2(1.0, -1.0);
+	if (grad < 1.0/16.0) {
+		return vec2(0.0, -1.0);
+	} else if (grad < 3.0/16.0) {
+		return vec2(-1.0, -1.0);
+	} else if (grad < 5.0/16.0) {
+		return vec2(-1.0, 0.0);
+	} else if (grad < 7.0/16.0) {
+		return vec2(-1.0, 1.0);
+	} else if (grad < 9.0/16.0) {
+		return vec2(0.0, 1.0);
+	} else if (grad < 11.0/16.0) {
+		return vec2(1.0, 1.0);
+	} else if (grad < 13.0/16.0) {
+		return vec2(1.0, 0.0);
+	} else if (grad < 15.0/16.0) {
+		return vec2(1.0, -1.0);
 	} else {
-		val = vec2(0.0, -1.0);
+		return vec2(0.0, -1.0);
 	}
-	return val / size;
 }
 
 void main() {
 	vec3 val = texture2D(texture0, uv).rgb;
 	vec3 grad = texture2D(texture1, uv).rgb;
 	
-	vec2 offR = off(grad.r);
-	vec2 offG = off(grad.g);
-	vec2 offB = off(grad.b);
+	vec2 offR = off(grad.r) / size;
+	vec2 offG = off(grad.g) / size;
+	vec2 offB = off(grad.b) / size;
 
 	float r0 = texture2D(texture0, uv + offR).r;
 	float g0 = texture2D(texture0, uv + offG).g;
