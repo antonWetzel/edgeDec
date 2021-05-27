@@ -179,11 +179,9 @@ document.body.onmouseup = function (ev) {
     }
 };
 document.body.onwheel = function (ev) {
-    let op = graph.findAt(ev.pageX, ev.pageY);
-    if (op != null) {
-        op.zoom(ev.deltaY);
+    for (let i = 0; i < selected.length; i++) {
+        selected[i].zoom(ev.deltaY);
     }
-    ev.stopPropagation();
 };
 function addOperator() {
     let text = "Please enter shader name";
