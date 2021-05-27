@@ -1,6 +1,6 @@
 namespace graph {
 
-	export const fontHeight = 20
+	export const fontHeight = 30
 	const vertexShaderData = `
 	attribute vec2 position;
 	varying vec2 uv;
@@ -59,9 +59,15 @@ namespace graph {
 		}
 
 		abstract update(): void
+		zoom(dist: number): void {
+			let mult = 1 + dist/1000
+			this.w *= mult
+			this.h *= mult
+		}
 		edit(_key: string): void {
 			//may be overwritten by implementation
 		}
+		abstract get helptext(): string
 
 		draw(): void {
 			if (this.selected) {
@@ -156,6 +162,9 @@ namespace graph {
 			this.vid = vid
 		}
 
+		get helptext() {
+			return "Video Source\n   m: toggle sound"
+		}
 		update() {
 			gl.bindTexture(gl.TEXTURE_2D, this.result)
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.vid)
@@ -179,6 +188,9 @@ namespace graph {
 
 		update() {
 			this.drawImage(this.img)
+		}
+		get helptext() {
+			return "Image Source\n   no options"
 		}
 	}
 
@@ -240,6 +252,10 @@ namespace graph {
 				link.click();
 			}
 		}
+		get helptext() {
+			return "Image Source\n" +
+			"   h: save display\n"
+		}
 	}
 
 	abstract class Operator extends drawable {
@@ -299,6 +315,10 @@ namespace graph {
 			gl.bindTexture(gl.TEXTURE_2D, this.result)
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, gl.canvas)
 		}
+
+		zoom(_dist: number): void {
+			//pass
+		}
 	}
 
 	class ShaderOperator extends Operator {
@@ -336,15 +356,14 @@ namespace graph {
 		}
 
 		edit(key: string) {
-			if (this.param.length == 0) {
-				return
-			}
 			if (key == 'h') {
 				let link = document.createElement('a');
 				link.download = 'display.png';
 				this.update()
 				link.href = (gl.canvas as HTMLCanvasElement).toDataURL()
-				link.click();
+				link.click()
+			} else if (this.param.length == 0) {
+				return
 			} else if (key == "w" || key == "s") {
 				if (key == "w") {
 					this.index -= 1
@@ -379,6 +398,13 @@ namespace graph {
 				}
 				this.updateName()
 			}
+		}
+		get helptext() {
+			return "Shader Operator\n" +
+			"   h: save display\n" +
+			"   w,s: change parameter\n" + 
+			"   q,a: reduce parameter\n" + 
+			"   e,d: increase parameter\n"
 		}
 	}
 	class MatrixOperator extends Operator {
@@ -429,9 +455,6 @@ namespace graph {
 		edit(key: string) {
 			switch (key) {
 			case 'h':
-				if (this.inputs.length == 0) {
-					return
-				}
 				let link = document.createElement('a')
 				link.download = 'display.png'
 				this.update()
@@ -496,6 +519,16 @@ namespace graph {
 				return
 			}
 			this.updateName()
+		}
+		get helptext() {
+			return "Shader Operator\n" +
+			"   h: save display\n" +
+			"   w,a,s,d: change position\n" + 
+			"   q: reduce position\n" + 
+			"   e: increase position\n" +
+			"   r: toggle negative scaling\n" +
+			"   f: reduce matrix size\n" +
+			"   g: increase matrix size\n"
 		}
 	}
 	export function setup(ctx: CanvasRenderingContext2D) {

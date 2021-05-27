@@ -9,7 +9,6 @@ document.body.onload = function() {
 	if (ctx == null) {
 		return
 	}
-
 	sidebar = document.createElement("canvas")
 	sidebar.height = 70
 	sidebar.style.display = "block"
@@ -44,7 +43,7 @@ function drawSidebar() {
 	sidebarCtx.fillStyle = color.boxNormal
 	sidebarCtx.fillRect(0, 0, sidebar.width, sidebar.height)
 
-	let names = ["webcam", "file", "shader", "matrix", "display", "template", "color", "delete", "help"]
+	let names = ["1:webcam", "2:file", "3:shader", "4:matrix", "5:display", "6:template", "7:color", "8:delete", "9:help"]
 	sidebarCtx.fillStyle = color.boxBackground
 	let diff = sidebar.width / names.length
 	for (let i = 0; i < names.length; i++) {
@@ -102,7 +101,11 @@ document.body.onkeydown = async function(ev: KeyboardEvent) {
 		selected = []
 		break
 	case "9":
-		alert("TODO: write help text")
+		if (selected.length == 1) {
+			alert(selected[0].helptext)
+		} else {
+			alert(helptext)
+		}
 		break
 	default:
 		if (selected.length == 1) {
@@ -185,6 +188,14 @@ document.body.onmouseup = function(ev: MouseEvent) {
 	}
 }
 
+document.body.onwheel = function(ev: WheelEvent) {
+	let op = graph.findAt(ev.pageX, ev.pageY)
+	if (op != null) {
+		op.zoom(ev.deltaY)
+	}
+	ev.stopPropagation()
+}
+
 function addOperator(): graph.drawable | null {
 	let text = "Please enter shader name"
 	let allShaders = Object.keys(shaders.all)
@@ -235,3 +246,9 @@ function addTemplate() {
 	}
 }
 
+
+const helptext = `
+1: add Webcam input
+2: add File input (jpg, png, webm, mp4)
+3: add shader operator
+4: add matrix operator`

@@ -1,7 +1,7 @@
 "use strict";
 var graph;
 (function (graph) {
-    graph.fontHeight = 20;
+    graph.fontHeight = 30;
     const vertexShaderData = `
 	attribute vec2 position;
 	varying vec2 uv;
@@ -39,6 +39,11 @@ var graph;
             if (this.inputs.length > this.l) {
                 this.inputs.shift();
             }
+        }
+        zoom(dist) {
+            let mult = 1 + dist / 1000;
+            this.w *= mult;
+            this.h *= mult;
         }
         edit(_key) {
             //may be overwritten by implementation
@@ -107,6 +112,9 @@ var graph;
             super(0, vid.width / 2, vid.height / 2, createTexture(vid), vid.width, vid.height);
             this.vid = vid;
         }
+        get helptext() {
+            return "Video Source\n   m: toggle sound";
+        }
         update() {
             gl.bindTexture(gl.TEXTURE_2D, this.result);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, this.vid);
@@ -125,6 +133,9 @@ var graph;
         }
         update() {
             this.drawImage(this.img);
+        }
+        get helptext() {
+            return "Image Source\n   no options";
         }
     }
     class Display extends drawable {
@@ -181,6 +192,10 @@ var graph;
                 link.click();
             }
         }
+        get helptext() {
+            return "Image Source\n" +
+                "   h: save display\n";
+        }
     }
     class Operator extends drawable {
         constructor(l, w, h, program) {
@@ -232,6 +247,9 @@ var graph;
             gl.bindTexture(gl.TEXTURE_2D, this.result);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, gl.canvas);
         }
+        zoom(_dist) {
+            //pass
+        }
     }
     class ShaderOperator extends Operator {
         constructor(l, name, program, param, values) {
@@ -260,15 +278,15 @@ var graph;
             this.w = w / 2 + 20;
         }
         edit(key) {
-            if (this.param.length == 0) {
-                return;
-            }
             if (key == 'h') {
                 let link = document.createElement('a');
                 link.download = 'display.png';
                 this.update();
                 link.href = gl.canvas.toDataURL();
                 link.click();
+            }
+            else if (this.param.length == 0) {
+                return;
             }
             else if (key == "w" || key == "s") {
                 if (key == "w") {
@@ -315,6 +333,13 @@ var graph;
                 this.updateName();
             }
         }
+        get helptext() {
+            return "Shader Operator\n" +
+                "   h: save display\n" +
+                "   w,s: change parameter\n" +
+                "   q,a: reduce parameter\n" +
+                "   e,d: increase parameter\n";
+        }
     }
     class MatrixOperator extends Operator {
         constructor(program, mat) {
@@ -358,9 +383,6 @@ var graph;
         edit(key) {
             switch (key) {
                 case 'h':
-                    if (this.inputs.length == 0) {
-                        return;
-                    }
                     let link = document.createElement('a');
                     link.download = 'display.png';
                     this.update();
@@ -436,6 +458,16 @@ var graph;
                     return;
             }
             this.updateName();
+        }
+        get helptext() {
+            return "Shader Operator\n" +
+                "   h: save display\n" +
+                "   w,a,s,d: change position\n" +
+                "   q: reduce position\n" +
+                "   e: increase position\n" +
+                "   r: toggle negative scaling\n" +
+                "   f: reduce matrix size\n" +
+                "   g: increase matrix size\n";
         }
     }
     function setup(ctx) {
