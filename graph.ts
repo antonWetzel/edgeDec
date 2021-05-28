@@ -358,7 +358,7 @@ namespace graph {
 		edit(key: string) {
 			if (key == 'h') {
 				let link = document.createElement('a');
-				link.download = 'display.png';
+				link.download = this.displayName + ".png"
 				this.update()
 				link.href = (gl.canvas as HTMLCanvasElement).toDataURL()
 				link.click()

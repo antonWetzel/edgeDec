@@ -10,6 +10,6 @@ void main() {
 	res += texture2D(texture, uv + vec2(0.0, 0.0) / size).rgb * -4.0;
 	res += texture2D(texture, uv + vec2(0.0, 1.0) / size).rgb * 1.0;
 	res += texture2D(texture, uv + vec2(1.0, 0.0) / size).rgb * 1.0;
-	gl_FragColor.rgb = res / 4.0;
+	gl_FragColor.rgb = res / 8.0 + 0.5;
 	gl_FragColor.a = 1.0;
 }

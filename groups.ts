@@ -13,10 +13,11 @@ namespace template {
 	}
 	export let all: {[key: string]: opInfo[]} = {
 		"minimal": [
-			createOpInfo("grayMax"),
+			createOpInfo("gray"),
 			createOpInfo("laplaceB", [0]),
-			createOpInfo("threshhold", [1]),
-			createOpInfo("inverse", [2]),
+			createOpInfo("edgeValue", [1]),
+			createOpInfo("threshhold", [2]),
+			createOpInfo("inverse", [3]),
 		],
 		"canny": [
 			createOpInfo("gray"),
