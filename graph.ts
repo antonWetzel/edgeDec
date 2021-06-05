@@ -456,7 +456,7 @@ namespace graph {
 			switch (key) {
 			case 'h':
 				let link = document.createElement('a')
-				link.download = 'display.png'
+				link.download = 'matrix.png'
 				this.update()
 				link.href = (gl.canvas as HTMLCanvasElement).toDataURL()
 				link.click()
@@ -667,66 +667,71 @@ namespace graph {
 	}
 	
 	export async function addWebcam(): Promise<drawable> {
-		let stream = await navigator.mediaDevices.getUserMedia({video:true})
-		let display = document.createElement("video")
-		display.srcObject = stream
-		display.autoplay = true
-		return new Promise<drawable>(
-			function(resolve, _recect) {
-				display.onplay = function() {
-					let x = new VideoSource(display)
-					all.push(x)
-					resolve(x)
+		let stream: MediaStream | null = null
+		try {
+			stream = await navigator.mediaDevices.getUserMedia({video:true})
+		} catch {
+			alert("could not create webcam input")
+		} finally {
+			let display = document.createElement("video")
+			display.srcObject = stream
+			display.autoplay = true
+			return new Promise<drawable>(
+				function(resolve, _recect) {
+					display.onplay = function() {
+						let x = new VideoSource(display)
+						all.push(x)
+						resolve(x)
+					}
 				}
-			}
-		)
+			)
+		}
 	}
-
 	export async function addFile(): Promise<drawable> {
-		return new Promise<drawable>(
-			function(resolve, recect) {
-				let input = document.createElement("input")
-				input.type = "file"
-				input.onchange = function() {
-					let files = input.files
-					if (files == null || files.length == 0) {
-						recect("only one filed allowed")
-						return
-					}
-					let file = files[0]
-					let sep = file.name.split(".")
-	
-					switch (sep[sep.length-1]) {
-					case "png":
-					case "jpg":
-						let img = document.createElement("img")
-						img.src = URL.createObjectURL(file)
-						img.onload = function() {
-							let x = new ImageSource(img)
-							all.push(x)
-							resolve(x)
+			return new Promise<drawable>(
+				function(resolve, recect) {
+					let input = document.createElement("input")
+					input.type = "file"
+					input.onchange = function() {
+						let files = input.files
+						if (files == null || files.length == 0) {
+							recect("only one file allowed")
+							return
 						}
-						break
-					case "mp4":
-					case "webm":
-						let vid = document.createElement("video")
-						vid.src = URL.createObjectURL(file)
-						vid.onplay = function() {
-							let x = new VideoSource(vid)
-							all.push(x)
-							vid.volume = 0
-							resolve(x)
+						let file = files[0]
+						let sep = file.name.split(".")
+		
+						switch (sep[sep.length-1]) {
+						case "png":
+						case "jpg":
+							let img = document.createElement("img")
+							img.src = URL.createObjectURL(file)
+							img.onload = function() {
+								let x = new ImageSource(img)
+								all.push(x)
+								resolve(x)
+							}
+							break
+						case "mp4":
+						case "webm":
+							let vid = document.createElement("video")
+							vid.src = URL.createObjectURL(file)
+							vid.onplay = function() {
+								let x = new VideoSource(vid)
+								all.push(x)
+								vid.volume = 0
+								resolve(x)
+							}
+							vid.autoplay = true
+							vid.loop = true
+							break
+						default:
+							alert("file format not allowed")
 						}
-						vid.autoplay = true
-						vid.loop = true
-						break
-					default:
-						recect("file format not allowed")
 					}
+					input.click()
 				}
-				input.click()
-			}
-		)
+			)
 	}
 
 	export function addDisplay(): drawable {

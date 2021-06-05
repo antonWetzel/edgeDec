@@ -30,7 +30,7 @@ namespace template {
 			createOpInfo("euclidean", [4, 5]),
 			createOpInfo("grad", [2, 3]),
 			createOpInfo("suppression", [6, 7]),
-			createOpInfo("threshhold", [8]), //hysteresis
+			createOpInfo("threshhold", [8]), //hysteresis in original algorithmus
 
 			createOpInfo("inverse", [9]),
 		],

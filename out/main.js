@@ -37,7 +37,7 @@ function drawSidebar() {
     sidebarCtx.font = "30px monospace";
     sidebarCtx.fillStyle = color.boxNormal;
     sidebarCtx.fillRect(0, 0, sidebar.width, sidebar.height);
-    let names = ["1:webcam", "2:file", "3:shader", "4:matrix", "5:display", "6:template", "7:color", "8:delete", "9:help"];
+    let names = ["webcam", "file", "shader", "matrix", "display", "template", "color", "delete", "help"];
     sidebarCtx.fillStyle = color.boxBackground;
     let diff = sidebar.width / names.length;
     for (let i = 0; i < names.length; i++) {
@@ -45,7 +45,7 @@ function drawSidebar() {
     }
     sidebarCtx.fillStyle = color.text;
     for (let i = 0; i < names.length; i++) {
-        sidebarCtx.fillText(names[i], (i + 0.5) * diff, sidebar.height / 2);
+        sidebarCtx.fillText((i + 1).toString() + ":" + names[i], (i + 0.5) * diff, sidebar.height / 2);
     }
 }
 function resetSelected(x = null) {
@@ -235,4 +235,9 @@ const helptext = `
 1: add Webcam input
 2: add File input (jpg, png, webm, mp4)
 3: add shader operator
-4: add matrix operator`;
+4: add matrix operator
+5: add display output
+6: add complete template
+7: change color theme
+8: delete selected operator
+9: open generic help or for selected operator`;
