@@ -1,7 +1,7 @@
 
 let sidebar: HTMLCanvasElement
 
-document.body.onload = function() {
+document.body.onload = function () {
 
 	let canvas = document.createElement("canvas")
 	canvas.style.display = "block"
@@ -12,7 +12,7 @@ document.body.onload = function() {
 	sidebar = document.createElement("canvas")
 	sidebar.height = 70
 	sidebar.style.display = "block"
-	document.body.onresize = function() {
+	document.body.onresize = function () {
 		canvas.width = document.body.clientWidth
 		canvas.height = document.body.clientHeight - sidebar.height
 		ctx.textAlign = "center"
@@ -25,7 +25,7 @@ document.body.onload = function() {
 
 	document.body.appendChild(canvas)
 	document.body.appendChild(sidebar)
-	
+
 	graph.setup(ctx)
 	selected = []
 }
@@ -47,11 +47,11 @@ function drawSidebar() {
 	sidebarCtx.fillStyle = color.boxBackground
 	let diff = sidebar.width / names.length
 	for (let i = 0; i < names.length; i++) {
-		sidebarCtx.fillRect(diff*i+5 , 5, diff-10, sidebar.height-10)
+		sidebarCtx.fillRect(diff * i + 5, 5, diff - 10, sidebar.height - 10)
 	}
 	sidebarCtx.fillStyle = color.text
 	for (let i = 0; i < names.length; i++) {
-		sidebarCtx.fillText((i+1).toString() + ":" + names[i], (i+0.5)*diff, sidebar.height/2)
+		sidebarCtx.fillText((i + 1).toString() + ":" + names[i], (i + 0.5) * diff, sidebar.height / 2)
 	}
 }
 
@@ -67,51 +67,51 @@ function resetSelected(x: graph.drawable | null = null) {
 	}
 }
 
-document.body.onkeydown = async function(ev: KeyboardEvent) {
+document.body.onkeydown = async function (ev: KeyboardEvent) {
 	let x: graph.drawable | null = null
 	let key = ev.key.toLowerCase()
 	switch (key) {
-	case "1":
-		x = await graph.addWebcam()
-		break
-	case "2":
-		x = await graph.addFile()
-		break
-	case "3":
-		x = addOperator()
-		break
-	case "4":
-		x = graph.addCustomOperator()
-		break
-	case "5":
-		x = graph.addDisplay()
-		break
-	case "6":
-		addTemplate()
-		break
-	case "7":
-		color.advance()
-		drawSidebar()
-		break
-	case "8":
-	case "delete":
-		for (let i = 0; i < selected.length; i++) {
-			graph.remove(selected[i])
-		}
-		selected = []
-		break
-	case "9":
-		if (selected.length == 1) {
-			alert(selected[0].helptext)
-		} else {
-			alert(helptext)
-		}
-		break
-	default:
-		if (selected.length == 1) {
-			selected[0].edit(key)
-		}
-		break
+		case "1":
+			x = await graph.addWebcam()
+			break
+		case "2":
+			x = await graph.addFile()
+			break
+		case "3":
+			x = addOperator()
+			break
+		case "4":
+			x = graph.addCustomOperator()
+			break
+		case "5":
+			x = graph.addDisplay()
+			break
+		case "6":
+			addTemplate()
+			break
+		case "7":
+			color.advance()
+			drawSidebar()
+			break
+		case "8":
+		case "delete":
+			for (let i = 0; i < selected.length; i++) {
+				graph.remove(selected[i])
+			}
+			selected = []
+			break
+		case "9":
+			if (selected.length == 1) {
+				alert(selected[0].helptext)
+			} else {
+				alert(helptext)
+			}
+			break
+		default:
+			if (selected.length == 1) {
+				selected[0].edit(key)
+			}
+			break
 	}
 	if (x != null) {
 		resetSelected(x)
@@ -123,7 +123,7 @@ function getUserNumber(text: string): number {
 	if (ans == null) {
 		return 0
 	} else {
-		let x =  parseFloat(ans)
+		let x = parseFloat(ans)
 		if (isNaN(x)) {
 			return 0
 		}
@@ -136,10 +136,10 @@ let selected: graph.drawable[]
 let x = 0
 let y = 0
 
-document.body.onmousedown = function(ev: MouseEvent) {
+document.body.onmousedown = function (ev: MouseEvent) {
 	if (document.body.clientHeight - ev.pageY < sidebar.height) {
-		let idx = Math.floor((ev.pageX / document.body.clientWidth)*9)
-		document.body.dispatchEvent(new KeyboardEvent("keydown", {key: (idx+1).toString()}))
+		let idx = Math.floor((ev.pageX / document.body.clientWidth) * 9)
+		document.body.dispatchEvent(new KeyboardEvent("keydown", { key: (idx + 1).toString() }))
 		return
 	}
 	if (!ev.shiftKey) {
@@ -156,8 +156,8 @@ document.body.onmousedown = function(ev: MouseEvent) {
 	}
 	for (let i = 0; i < selected.length; i++) {
 		if (selected[i] == c) {
-			selected[i] = selected[selected.length-1]
-			selected[selected.length-1] = c
+			selected[i] = selected[selected.length - 1]
+			selected[selected.length - 1] = c
 			return
 		}
 	}
@@ -165,7 +165,7 @@ document.body.onmousedown = function(ev: MouseEvent) {
 	selected.push(c)
 }
 
-document.body.onmouseup = function(ev: MouseEvent) {
+document.body.onmouseup = function (ev: MouseEvent) {
 	if (document.body.clientHeight - ev.pageY < sidebar.height) {
 		return
 	}
@@ -188,7 +188,7 @@ document.body.onmouseup = function(ev: MouseEvent) {
 	}
 }
 
-document.body.onwheel = function(ev: WheelEvent) {
+document.body.onwheel = function (ev: WheelEvent) {
 	for (let i = 0; i < selected.length; i++) {
 		selected[i].zoom(ev.deltaY)
 	}
@@ -198,7 +198,7 @@ function addOperator(): graph.drawable | null {
 	let text = "Please enter shader name"
 	let allShaders = Object.keys(shaders.all)
 	for (let i = 0; i < allShaders.length; i++) {
-		text += "\n  " + (i+1).toString() + ": " + allShaders[i]
+		text += "\n  " + (i + 1).toString() + ": " + allShaders[i]
 	}
 	var shaderName = window.prompt(text, "")
 	if (shaderName != null) {
@@ -211,7 +211,7 @@ function addTemplate() {
 	let text = "Please enter template name"
 	let templates = Object.keys(template.all)
 	for (let i = 0; i < templates.length; i++) {
-		text += "\n  " + (i+1).toString() + ": " + templates[i]
+		text += "\n  " + (i + 1).toString() + ": " + templates[i]
 	}
 	let name = window.prompt(text, "")
 	if (name == null) {

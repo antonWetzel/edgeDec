@@ -51,7 +51,7 @@ var graph;
             }
         }
         zoom(dist) {
-            let mult = 1 + dist / 1000;
+            let mult = 1 - dist / 1000;
             this.w *= mult;
             this.h *= mult;
         }
@@ -353,8 +353,8 @@ var graph;
         }
         get helptext() {
             return "Shader Operator\n" +
-                "   h: save display\n" +
-                "   w,s: change parameter\n" +
+                "   h: save result\n" +
+                "   w,s: change selected parameter\n" +
                 "   q,a: reduce parameter\n" +
                 "   e,d: increase parameter\n";
         }
@@ -474,7 +474,13 @@ var graph;
                         console.log("error in matrix shader creator");
                         return;
                     }
+                    gl.deleteProgram(this.program);
                     this.program = x.program;
+                    gl.useProgram(x.program);
+                    let size = gl.getUniformLocation(this.program, "size");
+                    if (size != null) {
+                        gl.uniform2f(size, this.resultW, this.resultH);
+                    }
                     break;
                 default:
                     return;
@@ -513,7 +519,7 @@ var graph;
     graph.setup = setup;
     function addCustomOperator() {
         let mat = [[1, 1], [-1, -1]];
-        let x = createOperator(createMatrixShader(mat, false), "custom", mat);
+        let x = createOperator(createMatrixShader(mat, false), "", mat);
         if (x != null) {
             all.push(x);
         }
@@ -748,12 +754,29 @@ var graph;
     graph.remove = remove;
     function moveTo(c, x, y) {
         if (c.length == 0) {
-            return;
+            //pass//
         }
-        let dX = x - c[c.length - 1].x;
-        let dY = y - c[c.length - 1].y;
-        for (let i = 0; i < c.length; i++) {
-            c[i].move(dX, dY);
+        else if (c.length == 1) { //try to allign if only one	is moved
+            for (let i = 0; i < all.length; i++) {
+                if (Math.abs(all[i].x - x) < 10) {
+                    x = all[i].x;
+                    break;
+                }
+            }
+            for (let i = 0; i < all.length; i++) {
+                if (Math.abs(all[i].y - y) < 10) {
+                    y = all[i].y;
+                    break;
+                }
+            }
+            c[0].moveAbs(x, y);
+        }
+        else { //move all by the difference to the first
+            let dX = x - c[0].x;
+            let dY = y - c[0].y;
+            for (let i = 0; i < c.length; i++) {
+                c[i].move(dX, dY);
+            }
         }
     }
     graph.moveTo = moveTo;

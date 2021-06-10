@@ -9,7 +9,7 @@ namespace color {
 		text: string
 		arrow: string
 	}
-	
+
 	export let light: config = {
 		boxNormal: "#000000",
 		boxSelected: "#00FF00",
@@ -19,7 +19,7 @@ namespace color {
 		text: "#000000",
 		arrow: "#000000",
 	}
-	
+
 	export let dark: config = {
 		boxNormal: "#333333",
 		boxSelected: "#005500",
@@ -49,7 +49,7 @@ namespace color {
 		set(c)
 		colors.push(c)
 	}
-	
+
 	export let boxNormal: string
 	export let boxSelected: string
 	export let boxBackground: string

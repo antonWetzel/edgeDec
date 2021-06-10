@@ -11,7 +11,7 @@ namespace template {
 			ins: ins,
 		}
 	}
-	export let all: {[key: string]: opInfo[]} = {
+	export let all: { [key: string]: opInfo[] } = {
 		"minimal": [
 			createOpInfo("gray"),
 			createOpInfo("laplaceB", [0]),
@@ -25,7 +25,7 @@ namespace template {
 			createOpInfo("sobelX", [1]),
 			createOpInfo("sobelY", [1]),
 			createOpInfo("edgeValue", [2]),
-	
+
 			createOpInfo("edgeValue", [3]),
 			createOpInfo("euclidean", [4, 5]),
 			createOpInfo("grad", [2, 3]),
