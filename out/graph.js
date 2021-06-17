@@ -16,16 +16,6 @@ var graph;
     let nothingProgram;
     const border = 5;
     class drawable {
-        result;
-        resultW;
-        resultH;
-        x;
-        y;
-        w;
-        h;
-        l;
-        inputs;
-        selected;
         constructor(l, w, h, result, resultW, resultH) {
             this.x = screen.canvas.width * 1 / 6 + w;
             this.y = screen.canvas.height * 1 / 6 + h;
@@ -116,7 +106,6 @@ var graph;
         return texture;
     }
     class VideoSource extends drawable {
-        vid;
         constructor(vid) {
             vid.width = vid.videoWidth;
             vid.height = vid.videoHeight;
@@ -138,7 +127,6 @@ var graph;
         }
     }
     class ImageSource extends drawable {
-        img;
         constructor(img) {
             super(0, img.width / 2, img.height / 2, createTexture(img), img.width, img.height);
             this.img = img;
@@ -210,8 +198,6 @@ var graph;
         }
     }
     class Operator extends drawable {
-        program;
-        displayName;
         constructor(l, w, h, program) {
             super(l, w, h, createTexture(gl.canvas), 200, 200);
             this.program = program;
@@ -266,10 +252,6 @@ var graph;
         }
     }
     class ShaderOperator extends Operator {
-        name;
-        param;
-        values;
-        index;
         constructor(l, name, program, param, values) {
             super(l, 0, graph.fontHeight * param.length / 2 + 20, program);
             this.name = name;
@@ -360,10 +342,6 @@ var graph;
         }
     }
     class MatrixOperator extends Operator {
-        values;
-        selectX;
-        selectY;
-        force;
         constructor(program, mat) {
             super(1, 100, 100, program);
             this.values = mat;
