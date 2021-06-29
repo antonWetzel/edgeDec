@@ -190,10 +190,22 @@ function addOperator() {
         text += "\n  " + (i + 1).toString() + ": " + allShaders[i];
     }
     var shaderName = window.prompt(text, "");
-    if (shaderName != null) {
-        return graph.addOperator(shaderName);
+    if (shaderName == null || shaderName.length == 0) {
+        return null;
     }
-    return null;
+    if ('0' <= shaderName[0] && shaderName[0] <= '9') {
+        var x = Number.parseInt(shaderName, 10);
+        if (isNaN(x)) {
+            alert("not a valid number");
+            return null;
+        }
+        if (x < 1 || x > allShaders.length) {
+            alert("index out of range");
+            return null;
+        }
+        shaderName = allShaders[x - 1];
+    }
+    return graph.addOperator(shaderName);
 }
 function addTemplate() {
     let text = "Please enter template name";
@@ -202,11 +214,25 @@ function addTemplate() {
         text += "\n  " + (i + 1).toString() + ": " + templates[i];
     }
     let name = window.prompt(text, "");
-    if (name == null) {
+    if (name == null || name.length == 0) {
         return;
     }
-    if (!(name in template.all)) {
-        return;
+    if ('0' <= name[0] && name[0] <= '9') {
+        var x = Number.parseInt(name, 10);
+        if (isNaN(x)) {
+            alert("not a valid number");
+            return null;
+        }
+        if (x < 1 || x > templates.length) {
+            alert("index out of range");
+            return null;
+        }
+        name = templates[x - 1];
+    }
+    else {
+        if (name in template.all == false) {
+            return;
+        }
     }
     let data = template.all[name];
     let result = [];

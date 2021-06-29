@@ -163,7 +163,11 @@ namespace graph {
 		}
 
 		get helptext() {
-			return "Video Source\n   m: toggle sound"
+			return "Video Source\n" +
+				"   m: toggle sound\n" +
+				"   a: decrease output size\n" +
+				"   d: increase output size\n" +
+				"   mouse wheel: change display size"
 		}
 		update() {
 			gl.bindTexture(gl.TEXTURE_2D, this.result)
@@ -173,10 +177,20 @@ namespace graph {
 		edit(key: string) {
 			if (key == "m") {
 				this.vid.volume = 1 - this.vid.volume
+			} else if (key == 'a') {
+				this.resultH /= 1.1
+				this.resultW /= 1.1
+				this.w /= 1.1
+				this.h /= 1.1
+			} else if (key == 'd') {
+				this.resultH *= 1.1
+				this.resultW *= 1.1
+				this.w *= 1.1
+				this.h *= 1.1
+
 			}
 		}
 	}
-
 	class ImageSource extends drawable {
 
 		img: HTMLImageElement
@@ -190,7 +204,23 @@ namespace graph {
 			this.drawImage(this.img)
 		}
 		get helptext() {
-			return "Image Source\n   no options"
+			return "Image Source\n" +
+				"   a: decrease output size\n" +
+				"   d: increase output size\n" +
+				"   mouse wheel: change display size"
+		}
+		edit(key: string) {
+			if (key == 'a') {
+				this.resultH /= 1.1
+				this.resultW /= 1.1
+				this.w /= 1.1
+				this.h /= 1.1
+			} else if (key == 'd') {
+				this.resultH *= 1.1
+				this.resultW *= 1.1
+				this.w *= 1.1
+				this.h *= 1.1
+			}
 		}
 	}
 
@@ -554,7 +584,7 @@ namespace graph {
 			return
 		}
 		nothingProgram = x.program
-		setInterval(draw, 1000 / 60)
+		setInterval(draw, 1000 / 30)
 	}
 
 	export function addCustomOperator(): drawable | null {
