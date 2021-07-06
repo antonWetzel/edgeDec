@@ -1,6 +1,13 @@
+/**logic and display of the graph area*/
 namespace graph {
 
+	/**fontheight for the canvas and the sidebar*/
 	export const fontHeight = 30
+
+	/**
+	 * webGL is 3d and calculates positions from -1 to +1
+	 * normalize uv from 0 to 1 and don't change the positions
+	*/
 	const vertexShaderData = `
 	attribute vec2 position;
 	varying vec2 uv;
@@ -10,12 +17,25 @@ namespace graph {
 		gl_Position = vec4(position.x, position.y, 0.0, 1.0);
 	}`
 
+	/**result area, visible to the user*/
 	let screen: CanvasRenderingContext2D
+
+	/**remember all drawables to iterate*/
 	let all: Array<drawable>
+
+	/**webGl context for calculations, the same context for all drawables*/
 	let gl: WebGLRenderingContext
+
+	/**defautl webGLProgramm for displays*/
 	let nothingProgram: WebGLProgram
+
+	/**border width around drawables*/
 	const border = 5
 
+	/**
+	 * baseclass for all drawables, manages inputs, movabiltiy, size
+	 * default methods to fill with text or image
+	*/
 	export abstract class drawable {
 
 		result: WebGLTexture
@@ -32,7 +52,12 @@ namespace graph {
 
 		selected: boolean
 
-		constructor(l: number, w: number, h: number, result: WebGLTexture, resultW: number, resultH: number) {
+		constructor(
+			l: number, //expected input cound
+			w: number, h: number, //display size
+			result: WebGLTexture, //result texture
+			resultW: number, resultH: number //result size
+		) {
 			this.x = screen.canvas.width * 1 / 6 + w
 			this.y = screen.canvas.height * 1 / 6 + h
 			this.w = w
@@ -45,6 +70,7 @@ namespace graph {
 			this.resultH = resultH
 		}
 
+		/** add one input, may remove oldest input if the expected input count is reached */
 		addInput(x: drawable): void {
 			for (let i = 0; i < this.inputs.length; i++) {
 				if (this.inputs[i] == x) {
@@ -57,18 +83,23 @@ namespace graph {
 				this.inputs.shift()
 			}
 		}
-
+		/** calculate new result and display it */
 		abstract update(): void
+
+		/** change the display size */
 		zoom(dist: number): void {
 			let mult = 1 - dist / 1000
 			this.w *= mult
 			this.h *= mult
 		}
-		edit(_key: string): void {
-			//may be overwritten by implementation
-		}
+
+		/** edit the drawable, functions depend of the drawable type */
+		abstract edit(_key: string): void
+
+		/** specific help text for this drawable type */
 		abstract get helptext(): string
 
+		/** draw outer box and update the inside */
 		draw(): void {
 			if (this.selected) {
 				this.drawRect(color.boxSelected, true)
@@ -79,6 +110,7 @@ namespace graph {
 			this.update()
 		}
 
+		/** true if the coordinates are inside */
 		inside(x: number, y: number): boolean {
 			return (
 				this.x - this.w <= x && x < this.x + this.w &&
@@ -86,17 +118,19 @@ namespace graph {
 			)
 		}
 
+		/** move relative to the current position */
 		move(x: number, y: number) {
 			this.x += x
 			this.y += y
 		}
 
-
+		/** move to the coordinates */
 		moveAbs(x: number, y: number) {
 			this.x = x
 			this.y = y
 		}
 
+		/** draw an image inside the drawable */
 		drawImage(img: CanvasImageSource) {
 			screen.drawImage(
 				img,
@@ -106,6 +140,8 @@ namespace graph {
 				this.h * 2
 			)
 		}
+
+		/** draw a rectangle with or without the border */
 		drawRect(color: string, full: boolean) {
 			screen.fillStyle = color
 			if (full) {
@@ -124,6 +160,8 @@ namespace graph {
 				)
 			}
 		}
+
+		/** draw text at the center */
 		drawText(text: string) {
 			screen.fillStyle = color.text
 			let s = text.split("\n")
@@ -137,21 +175,7 @@ namespace graph {
 		}
 	}
 
-	function createTexture(src: TexImageSource): WebGLTexture {
-		let texture = gl.createTexture()
-		if (texture == null) {
-			console.log("texture error")
-			return 0
-		}
-		gl.bindTexture(gl.TEXTURE_2D, texture)
-		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, src)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-		return texture
-	}
-
+	/** source from a video (webcam or file) */
 	class VideoSource extends drawable {
 		vid: HTMLVideoElement
 
@@ -191,6 +215,8 @@ namespace graph {
 			}
 		}
 	}
+
+	/** source from a image (file) */
 	class ImageSource extends drawable {
 
 		img: HTMLImageElement
@@ -224,6 +250,7 @@ namespace graph {
 		}
 	}
 
+	/** copy input and display it */
 	class Display extends drawable {
 
 		constructor() {
@@ -288,6 +315,7 @@ namespace graph {
 		}
 	}
 
+	/** calculates result with webGL  */
 	abstract class Operator extends drawable {
 
 		program: WebGLProgram
@@ -351,6 +379,7 @@ namespace graph {
 		}
 	}
 
+	/** operator with predifined shader */
 	class ShaderOperator extends Operator {
 		name: string
 
@@ -437,6 +466,8 @@ namespace graph {
 				"   e,d: increase parameter\n"
 		}
 	}
+
+	/** operator with shader based on the matrix */
 	class MatrixOperator extends Operator {
 		values: number[][]
 
@@ -567,6 +598,7 @@ namespace graph {
 				"   g: increase matrix size\n"
 		}
 	}
+	/** setup webGL and start the draw loop */
 	export function setup(ctx: CanvasRenderingContext2D) {
 		screen = ctx
 		all = []
@@ -587,6 +619,7 @@ namespace graph {
 		setInterval(draw, 1000 / 30)
 	}
 
+	/** add operator based on a matrix */
 	export function addCustomOperator(): drawable | null {
 		let mat = [[1, 1], [-1, -1]]
 		let x = createOperator(createMatrixShader(mat, false), "", mat)
@@ -596,6 +629,7 @@ namespace graph {
 		return x
 	}
 
+	/** add operator based on predifined program */
 	export function addOperator(program: string): drawable | null {
 		if (program in shaders.all == false) {
 			console.log("program does not exist")
@@ -607,8 +641,15 @@ namespace graph {
 		}
 		return x
 	}
-
-	function createWebGlProgram(programData: string): { "program": WebGLProgram, "texCount": number, "param": string[] } | null {
+	/** helper function to setup the webGL program */
+	function createWebGlProgram(
+		programData: string
+	): {
+		"program": WebGLProgram,
+		"texCount": number,
+		"param": string[]
+	} | null {
+		//check the program source for uniforms
 		let param: string[] = []
 		let texCount = 0
 		let split = programData.split(/[\s;]+/)
@@ -621,7 +662,7 @@ namespace graph {
 				}
 			}
 		}
-
+		//setup the shader in webGL
 		let program = gl.createProgram()
 		if (program == null) {
 			console.log("could not create program")
@@ -644,13 +685,13 @@ namespace graph {
 			}
 			gl.attachShader(program, shader)
 		}
-
 		gl.linkProgram(program)
 		if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
 			console.log('Unable to initialize the shader program: ' + gl.getProgramInfoLog(program))
 			return null
 		}
-		gl.useProgram(program)
+
+		//setup the 3D triangles
 		const buffer = gl.createBuffer()
 		if (buffer == null) {
 			console.log("could not create buffer")
@@ -685,7 +726,7 @@ namespace graph {
 		return { "program": program, "texCount": texCount, "param": param }
 	}
 
-
+	/** helper function to setup operator */
 	function createOperator(programData: string, name: string, matrix: number[][] | null = null): drawable | null {
 		let x = createWebGlProgram(programData)
 		if (x == null) {
@@ -702,6 +743,7 @@ namespace graph {
 		}
 	}
 
+	/** add a source based on a webcam */
 	export async function addWebcam(): Promise<drawable> {
 		let stream: MediaStream | null = null
 		try {
@@ -723,6 +765,8 @@ namespace graph {
 			)
 		}
 	}
+
+	/** add a source based on a file */
 	export async function addFile(): Promise<drawable> {
 		return new Promise<drawable>(
 			function (resolve, recect) {
@@ -769,13 +813,14 @@ namespace graph {
 			}
 		)
 	}
-
+	/** add display to the display area */
 	export function addDisplay(): drawable {
 		let dis = new Display()
 		all.push(dis)
 		return dis
 	}
 
+	/** redraw the display */
 	function draw() {
 		screen.fillStyle = color.background
 		let w = document.body.clientWidth
@@ -794,7 +839,7 @@ namespace graph {
 			all[i].draw()
 		}
 	}
-
+	/** draw arrow betwenn to drawables */
 	function arrow(s: drawable, d: drawable) {
 		let sx = s.x
 		let sy = s.y
@@ -819,7 +864,7 @@ namespace graph {
 			sy += diffY / amount
 		}
 	}
-
+	/** return drawable at the coordinates */
 	export function findAt(x: number, y: number): drawable | null {
 		for (let i = all.length - 1; i >= 0; i--) {
 			if (all[i].inside(x, y)) {
@@ -829,6 +874,7 @@ namespace graph {
 		return null
 	}
 
+	/** return drawable and connections */
 	export function remove(x: drawable) {
 		for (let i = 0; i < all.length; i++) {
 			if (all[i] == x) {
@@ -844,6 +890,7 @@ namespace graph {
 		}
 	}
 
+	/** move operator to the coordinates, other drawables are moved by the same distance */
 	export function moveTo(c: drawable[], x: number, y: number) {
 		if (c.length == 0) {
 			//pass//
@@ -871,11 +918,14 @@ namespace graph {
 		}
 	}
 
+	/** move all operators by the distance */
 	export function moveAll(dx: number, dy: number) {
 		for (let i = 0; i < all.length; i++) {
 			all[i].move(dx, dy)
 		}
 	}
+
+	/** move selected operators by the distance */
 	export function move(x: number, y: number, c: drawable[]) {
 		if (c.length == 0) {
 			for (let i = 0; i < all.length; i++) {
@@ -888,6 +938,7 @@ namespace graph {
 		}
 	}
 
+	/** create shader based on the matrix */
 	function createMatrixShader(mat: number[][], forcePositive: boolean): string {
 		let res = `precision mediump float;
 	varying vec2 uv;
@@ -922,5 +973,21 @@ namespace graph {
 		res += "gl_FragColor.rgb = (res + " + (-min).toFixed(1) + ") / " + (max - min).toFixed(1) + ";"
 		res += "gl_FragColor.a = 1.0;}"
 		return res
+	}
+
+	/** create and setup webGL texture */
+	function createTexture(src: TexImageSource): WebGLTexture {
+		let texture = gl.createTexture()
+		if (texture == null) {
+			console.log("texture error")
+			return 0
+		}
+		gl.bindTexture(gl.TEXTURE_2D, texture)
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, src)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+		return texture
 	}
 }

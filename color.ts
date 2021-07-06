@@ -1,3 +1,4 @@
+//exports the colors for other files
 namespace color {
 
 	type config = {
@@ -10,44 +11,41 @@ namespace color {
 		arrow: string
 	}
 
-	export let light: config = {
-		boxNormal: "#000000",
-		boxSelected: "#00FF00",
-		boxBackground: "#FFFFFF",
+	let colors: config[] = [
+		{ //light
+			boxNormal: "#000000",
+			boxSelected: "#00FF00",
+			boxBackground: "#FFFFFF",
 
-		background: "#DDDDDD",
-		text: "#000000",
-		arrow: "#000000",
-	}
+			background: "#DDDDDD",
+			text: "#000000",
+			arrow: "#000000",
+		},
+		{ //dark
+			boxNormal: "#333333",
+			boxSelected: "#005500",
+			boxBackground: "#000000",
 
-	export let dark: config = {
-		boxNormal: "#333333",
-		boxSelected: "#005500",
-		boxBackground: "#000000",
-
-		background: "#222222",
-		text: "#AAAAAA",
-		arrow: "#444444",
-	}
-
-	export function set(x: config) {
-		boxNormal = x.boxNormal
-		boxSelected = x.boxSelected
-		boxBackground = x.boxBackground
-
-		background = x.background
-		text = x.text
-		arrow = x.arrow
-	}
-
-	let colors = [light, dark]
+			background: "#222222",
+			text: "#AAAAAA",
+			arrow: "#444444",
+		}
+	]
+	//change to the next color
 	export function advance() {
 		let c = colors.shift()
 		if (c == undefined) {
-			return
+			return //should not happen
 		}
-		set(c)
 		colors.push(c)
+
+		boxNormal = c.boxNormal
+		boxSelected = c.boxSelected
+		boxBackground = c.boxBackground
+
+		background = c.background
+		text = c.text
+		arrow = c.arrow
 	}
 
 	export let boxNormal: string
@@ -58,5 +56,6 @@ namespace color {
 	export let text: string
 	export let arrow: string
 
+	//setup the first color
 	advance()
 }

@@ -1,40 +1,40 @@
 "use strict";
+//exports the colors for other files
 var color;
 (function (color) {
-    color.light = {
-        boxNormal: "#000000",
-        boxSelected: "#00FF00",
-        boxBackground: "#FFFFFF",
-        background: "#DDDDDD",
-        text: "#000000",
-        arrow: "#000000",
-    };
-    color.dark = {
-        boxNormal: "#333333",
-        boxSelected: "#005500",
-        boxBackground: "#000000",
-        background: "#222222",
-        text: "#AAAAAA",
-        arrow: "#444444",
-    };
-    function set(x) {
-        color.boxNormal = x.boxNormal;
-        color.boxSelected = x.boxSelected;
-        color.boxBackground = x.boxBackground;
-        color.background = x.background;
-        color.text = x.text;
-        color.arrow = x.arrow;
-    }
-    color.set = set;
-    let colors = [color.light, color.dark];
+    let colors = [
+        {
+            boxNormal: "#000000",
+            boxSelected: "#00FF00",
+            boxBackground: "#FFFFFF",
+            background: "#DDDDDD",
+            text: "#000000",
+            arrow: "#000000",
+        },
+        {
+            boxNormal: "#333333",
+            boxSelected: "#005500",
+            boxBackground: "#000000",
+            background: "#222222",
+            text: "#AAAAAA",
+            arrow: "#444444",
+        }
+    ];
+    //change to the next color
     function advance() {
         let c = colors.shift();
         if (c == undefined) {
-            return;
+            return; //should not happen
         }
-        set(c);
         colors.push(c);
+        color.boxNormal = c.boxNormal;
+        color.boxSelected = c.boxSelected;
+        color.boxBackground = c.boxBackground;
+        color.background = c.background;
+        color.text = c.text;
+        color.arrow = c.arrow;
     }
     color.advance = advance;
+    //setup the first color
     advance();
 })(color || (color = {}));
