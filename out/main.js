@@ -1,12 +1,21 @@
 "use strict";
+/** sidebar with buttons */
 let sidebar;
+/** currently selected drawables */
+let selected;
+/** start X of the mouse movement */
+let x = 0;
+/** start Y of the mouse movement */
+let y = 0;
 document.body.onload = function () {
+    //setup display area
     let canvas = document.createElement("canvas");
     canvas.style.display = "block";
     const ctx = canvas.getContext("2d");
     if (ctx == null) {
         return;
     }
+    //setup sidebar area
     sidebar = document.createElement("canvas");
     sidebar.height = 70;
     sidebar.style.display = "block";
@@ -19,12 +28,14 @@ document.body.onload = function () {
         ctx.font = graph.fontHeight.toString() + "px monospace";
         drawSidebar();
     };
+    //draw display and sidebar
     document.body.onresize(new UIEvent(""));
     document.body.appendChild(canvas);
     document.body.appendChild(sidebar);
     graph.setup(ctx);
     selected = [];
 };
+/** update the sidebar */
 function drawSidebar() {
     let sidebarCtx = sidebar.getContext("2d");
     if (sidebarCtx == null) {
@@ -48,6 +59,7 @@ function drawSidebar() {
         sidebarCtx.fillText((i + 1).toString() + ":" + names[i], (i + 0.5) * diff, sidebar.height / 2);
     }
 }
+/** set selected empty or the drawable */
 function resetSelected(x = null) {
     for (let i = 0; i < selected.length; i++) {
         selected[i].selected = false;
@@ -124,31 +136,33 @@ function getUserNumber(text) {
         return x;
     }
 }
-let selected;
-let x = 0;
-let y = 0;
 document.body.onmousedown = function (ev) {
+    //mouse in input area
     if (document.body.clientHeight - ev.pageY < sidebar.height) {
         let idx = Math.floor((ev.pageX / document.body.clientWidth) * 9);
         document.body.dispatchEvent(new KeyboardEvent("keydown", { key: (idx + 1).toString() }));
         return;
     }
+    //select selected
     if (!ev.shiftKey) {
         for (let i = 0; i < selected.length; i++) {
             selected[i].selected = false;
         }
         selected = [];
     }
+    //find drawable at the positon
     let c = graph.findAt(ev.pageX, ev.pageY);
     if (c == null) {
         x = ev.pageX;
         y = ev.pageY;
         return;
     }
+    //remove drawable if it is already selected
     for (let i = 0; i < selected.length; i++) {
         if (selected[i] == c) {
-            selected[i] = selected[selected.length - 1];
-            selected[selected.length - 1] = c;
+            selected.splice(i, 1);
+            //selected[i] = selected[selected.length - 1]
+            //selected[selected.length - 1] = c
             return;
         }
     }
@@ -243,8 +257,8 @@ function addTemplate() {
             return;
         }
         result.push(x);
-        for (let j = 0; j < data[i].ins.length; j++) {
-            let idx = data[i].ins[j];
+        for (let j = 0; j < data[i].inputs.length; j++) {
+            let idx = data[i].inputs[j];
             x.addInput(result[idx]);
             x.x = Math.max(x.x, result[idx].x + result[idx].w + 50 + x.w);
         }

@@ -6,6 +6,7 @@ namespace graph {
 
 	/**
 	 * webGL is 3d and calculates positions from -1 to +1
+	 * 
 	 * normalize uv from 0 to 1 and don't change the positions
 	*/
 	const vertexShaderData = `
@@ -34,6 +35,7 @@ namespace graph {
 
 	/**
 	 * baseclass for all drawables, manages inputs, movabiltiy, size
+	 * 
 	 * default methods to fill with text or image
 	*/
 	export abstract class drawable {

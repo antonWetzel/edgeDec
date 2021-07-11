@@ -1,11 +1,14 @@
 "use strict";
-//logic and display of the graph
+/**logic and display of the graph area*/
 var graph;
 (function (graph) {
-    //fontheight for the canvas and the sidebar
+    /**fontheight for the canvas and the sidebar*/
     graph.fontHeight = 30;
-    //webGL is 3d and calculates positions from -1 to +1
-    //normalize uv from 0 to 1 and don't change the positions
+    /**
+     * webGL is 3d and calculates positions from -1 to +1
+     *
+     * normalize uv from 0 to 1 and don't change the positions
+    */
     const vertexShaderData = `
 	attribute vec2 position;
 	varying vec2 uv;
@@ -14,27 +17,27 @@ var graph;
 		uv = position/2.0 + 0.5;
 		gl_Position = vec4(position.x, position.y, 0.0, 1.0);
 	}`;
-    //result area, visible to the user
+    /**result area, visible to the user*/
     let screen;
-    //remember all drawables to iterate
+    /**remember all drawables to iterate*/
     let all;
-    //webGl context for calculations, the same context for all drawables
+    /**webGl context for calculations, the same context for all drawables*/
     let gl;
-    //defautl webGLPro
+    /**defautl webGLProgramm for displays*/
     let nothingProgram;
+    /**border width around drawables*/
     const border = 5;
+    /**
+     * baseclass for all drawables, manages inputs, movabiltiy, size
+     *
+     * default methods to fill with text or image
+    */
     class drawable {
-        result;
-        resultW;
-        resultH;
-        x;
-        y;
-        w;
-        h;
-        l;
-        inputs;
-        selected;
-        constructor(l, w, h, result, resultW, resultH) {
+        constructor(l, //expected input cound
+        w, h, //display size
+        result, //result texture
+        resultW, resultH //result size
+        ) {
             this.x = screen.canvas.width * 1 / 6 + w;
             this.y = screen.canvas.height * 1 / 6 + h;
             this.w = w;
@@ -46,6 +49,7 @@ var graph;
             this.resultW = resultW;
             this.resultH = resultH;
         }
+        /** add one input, may remove oldest input if the expected input count is reached */
         addInput(x) {
             for (let i = 0; i < this.inputs.length; i++) {
                 if (this.inputs[i] == x) {
@@ -58,14 +62,13 @@ var graph;
                 this.inputs.shift();
             }
         }
+        /** change the display size */
         zoom(dist) {
             let mult = 1 - dist / 1000;
             this.w *= mult;
             this.h *= mult;
         }
-        edit(_key) {
-            //may be overwritten by implementation
-        }
+        /** draw outer box and update the inside */
         draw() {
             if (this.selected) {
                 this.drawRect(color.boxSelected, true);
@@ -76,21 +79,26 @@ var graph;
             this.drawRect(color.boxBackground, false);
             this.update();
         }
+        /** true if the coordinates are inside */
         inside(x, y) {
             return (this.x - this.w <= x && x < this.x + this.w &&
                 this.y - this.h <= y && y < this.y + this.h);
         }
+        /** move relative to the current position */
         move(x, y) {
             this.x += x;
             this.y += y;
         }
+        /** move to the coordinates */
         moveAbs(x, y) {
             this.x = x;
             this.y = y;
         }
+        /** draw an image inside the drawable */
         drawImage(img) {
             screen.drawImage(img, this.x - this.w, this.y - this.h, this.w * 2, this.h * 2);
         }
+        /** draw a rectangle with or without the border */
         drawRect(color, full) {
             screen.fillStyle = color;
             if (full) {
@@ -100,6 +108,7 @@ var graph;
                 screen.fillRect(this.x - this.w, this.y - this.h, this.w * 2, this.h * 2);
             }
         }
+        /** draw text at the center */
         drawText(text) {
             screen.fillStyle = color.text;
             let s = text.split("\n");
@@ -109,22 +118,8 @@ var graph;
         }
     }
     graph.drawable = drawable;
-    function createTexture(src) {
-        let texture = gl.createTexture();
-        if (texture == null) {
-            console.log("texture error");
-            return 0;
-        }
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, src);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        return texture;
-    }
+    /** source from a video (webcam or file) */
     class VideoSource extends drawable {
-        vid;
         constructor(vid) {
             vid.width = vid.videoWidth;
             vid.height = vid.videoHeight;
@@ -161,8 +156,8 @@ var graph;
             }
         }
     }
+    /** source from a image (file) */
     class ImageSource extends drawable {
-        img;
         constructor(img) {
             super(0, img.width / 2, img.height / 2, createTexture(img), img.width, img.height);
             this.img = img;
@@ -191,6 +186,7 @@ var graph;
             }
         }
     }
+    /** copy input and display it */
     class Display extends drawable {
         constructor() {
             super(1, 100, 100, createTexture(gl.canvas), 200, 200);
@@ -199,16 +195,42 @@ var graph;
             if (this.inputs.length == 0) {
                 return;
             }
+            gl.useProgram(nothingProgram);
             let input = this.inputs[0];
+            let update = false;
             if (this.resultW != input.resultW) {
                 this.resultW = input.resultW;
                 this.w = input.resultW / 2;
+                update = true;
             }
             if (this.resultH != input.resultH) {
                 this.resultH = input.resultH;
                 this.h = input.resultH / 2;
+                update = true;
             }
-            this.result = input.result;
+            if (gl.canvas.width != input.resultW) {
+                gl.canvas.width = input.resultW;
+                update = true;
+            }
+            if (gl.canvas.height != input.resultH) {
+                gl.canvas.height = input.resultH;
+                update = true;
+            }
+            if (update) {
+                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            }
+            gl.activeTexture(gl.TEXTURE0);
+            let loc = gl.getUniformLocation(nothingProgram, "texture");
+            if (loc != null) {
+                gl.uniform1i(loc, 0);
+            }
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, input.result);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            gl.finish();
+            gl.bindTexture(gl.TEXTURE_2D, this.result);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, gl.canvas);
+            this.drawImage(gl.canvas);
         }
         edit(key) {
             if (key == 'h') {
@@ -224,9 +246,8 @@ var graph;
                 "   h: save display\n";
         }
     }
+    /** calculates result with webGL  */
     class Operator extends drawable {
-        program;
-        displayName;
         constructor(l, w, h, program) {
             super(l, w, h, createTexture(gl.canvas), 200, 200);
             this.program = program;
@@ -280,11 +301,8 @@ var graph;
             //pass
         }
     }
+    /** operator with predifined shader */
     class ShaderOperator extends Operator {
-        name;
-        param;
-        values;
-        index;
         constructor(l, name, program, param, values) {
             super(l, 0, graph.fontHeight * param.length / 2 + 20, program);
             this.name = name;
@@ -374,11 +392,8 @@ var graph;
                 "   e,d: increase parameter\n";
         }
     }
+    /** operator with shader based on the matrix */
     class MatrixOperator extends Operator {
-        values;
-        selectX;
-        selectY;
-        force;
         constructor(program, mat) {
             super(1, 100, 100, program);
             this.values = mat;
@@ -513,6 +528,7 @@ var graph;
                 "   g: increase matrix size\n";
         }
     }
+    /** setup webGL and start the draw loop */
     function setup(ctx) {
         screen = ctx;
         all = [];
@@ -532,6 +548,7 @@ var graph;
         setInterval(draw, 1000 / 30);
     }
     graph.setup = setup;
+    /** add operator based on a matrix */
     function addCustomOperator() {
         let mat = [[1, 1], [-1, -1]];
         let x = createOperator(createMatrixShader(mat, false), "", mat);
@@ -541,6 +558,7 @@ var graph;
         return x;
     }
     graph.addCustomOperator = addCustomOperator;
+    /** add operator based on predifined program */
     function addOperator(program) {
         if (program in shaders.all == false) {
             console.log("program does not exist");
@@ -553,7 +571,9 @@ var graph;
         return x;
     }
     graph.addOperator = addOperator;
+    /** helper function to setup the webGL program */
     function createWebGlProgram(programData) {
+        //check the program source for uniforms
         let param = [];
         let texCount = 0;
         let split = programData.split(/[\s;]+/);
@@ -567,6 +587,7 @@ var graph;
                 }
             }
         }
+        //setup the shader in webGL
         let program = gl.createProgram();
         if (program == null) {
             console.log("could not create program");
@@ -594,7 +615,7 @@ var graph;
             console.log('Unable to initialize the shader program: ' + gl.getProgramInfoLog(program));
             return null;
         }
-        gl.useProgram(program);
+        //setup the 3D triangles
         const buffer = gl.createBuffer();
         if (buffer == null) {
             console.log("could not create buffer");
@@ -615,6 +636,7 @@ var graph;
         gl.enableVertexAttribArray(pos);
         return { "program": program, "texCount": texCount, "param": param };
     }
+    /** helper function to setup operator */
     function createOperator(programData, name, matrix = null) {
         let x = createWebGlProgram(programData);
         if (x == null) {
@@ -631,6 +653,7 @@ var graph;
             return new ShaderOperator(x.texCount, name, x.program, x.param, values);
         }
     }
+    /** add a source based on a webcam */
     async function addWebcam() {
         let stream = null;
         try {
@@ -653,6 +676,7 @@ var graph;
         }
     }
     graph.addWebcam = addWebcam;
+    /** add a source based on a file */
     async function addFile() {
         return new Promise(function (resolve, recect) {
             let input = document.createElement("input");
@@ -697,12 +721,14 @@ var graph;
         });
     }
     graph.addFile = addFile;
+    /** add display to the display area */
     function addDisplay() {
         let dis = new Display();
         all.push(dis);
         return dis;
     }
     graph.addDisplay = addDisplay;
+    /** redraw the display */
     function draw() {
         screen.fillStyle = color.background;
         let w = document.body.clientWidth;
@@ -721,6 +747,7 @@ var graph;
             all[i].draw();
         }
     }
+    /** draw arrow betwenn to drawables */
     function arrow(s, d) {
         let sx = s.x;
         let sy = s.y;
@@ -743,6 +770,7 @@ var graph;
             sy += diffY / amount;
         }
     }
+    /** return drawable at the coordinates */
     function findAt(x, y) {
         for (let i = all.length - 1; i >= 0; i--) {
             if (all[i].inside(x, y)) {
@@ -752,6 +780,7 @@ var graph;
         return null;
     }
     graph.findAt = findAt;
+    /** return drawable and connections */
     function remove(x) {
         for (let i = 0; i < all.length; i++) {
             if (all[i] == x) {
@@ -767,6 +796,7 @@ var graph;
         }
     }
     graph.remove = remove;
+    /** move operator to the coordinates, other drawables are moved by the same distance */
     function moveTo(c, x, y) {
         if (c.length == 0) {
             //pass//
@@ -795,12 +825,14 @@ var graph;
         }
     }
     graph.moveTo = moveTo;
+    /** move all operators by the distance */
     function moveAll(dx, dy) {
         for (let i = 0; i < all.length; i++) {
             all[i].move(dx, dy);
         }
     }
     graph.moveAll = moveAll;
+    /** move selected operators by the distance */
     function move(x, y, c) {
         if (c.length == 0) {
             for (let i = 0; i < all.length; i++) {
@@ -814,6 +846,7 @@ var graph;
         }
     }
     graph.move = move;
+    /** create shader based on the matrix */
     function createMatrixShader(mat, forcePositive) {
         let res = `precision mediump float;
 	varying vec2 uv;
@@ -847,5 +880,20 @@ var graph;
         res += "gl_FragColor.rgb = (res + " + (-min).toFixed(1) + ") / " + (max - min).toFixed(1) + ";";
         res += "gl_FragColor.a = 1.0;}";
         return res;
+    }
+    /** create and setup webGL texture */
+    function createTexture(src) {
+        let texture = gl.createTexture();
+        if (texture == null) {
+            console.log("texture error");
+            return 0;
+        }
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, src);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        return texture;
     }
 })(graph || (graph = {}));

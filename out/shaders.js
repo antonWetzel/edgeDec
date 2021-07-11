@@ -1,4 +1,5 @@
 "use strict";
+/** automatic generated shader data */
 var shaders;
 (function (shaders) {
     shaders.all = {
