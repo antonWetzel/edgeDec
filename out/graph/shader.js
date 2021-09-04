@@ -1,4 +1,4 @@
-import * as box from './box.js';
+import * as Box from './box.js';
 import * as GPU from '../gpu/gpu.js';
 import * as Texture from '../gpu/texture.js';
 import * as Request from '../helper/request.js';
@@ -38,7 +38,7 @@ export async function NewWithName(name) {
     let body = document.createElement("div");
     body.className = "shader";
     body.innerHTML = name;
-    let b = box.New(200, 200, info.inputs);
+    let b = Box.New(200, 200, info.inputs);
     b.append(body);
     b.result = await Texture.Blanc(1, 1);
     let buffer;

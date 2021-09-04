@@ -6,24 +6,24 @@
 				{
 					"name": "Cleanup",
 					"points": [
-						"calls in template"
+						"function for shared"
 					]
 				},
 				{
 					"name": "QOL",
 					"points": [
-						"sort shaders inf"
+						"sort shaders infos"
 					]
 				},
 				{
 					"name": "Matrix",
-					"points": [
-						"New Category"
-					]
+					"points": []
 				},
 				{
 					"name": "Readme",
-					"points": []
+					"points": [
+						"New Category"
+					]
 				},
 				{
 					"name": "Helptext",
@@ -38,13 +38,25 @@
 					"name": "QOL",
 					"points": [
 						"categories for shader",
-						"Light/Dark (Cookie"
+						"Light/Dark (Cookie)"
 					]
 				},
 				{
 					"name": "Speed",
 					"points": [
-						"better conversion from video"
+						"better conversion from video",
+						"other compute size"
+					]
+				}
+			]
+		},
+		{
+			"name": "Not important",
+			"notes": [
+				{
+					"name": "Thrash",
+					"points": [
+						"size not synced"
 					]
 				}
 			]

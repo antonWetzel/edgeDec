@@ -18,7 +18,7 @@ const vertices = new Float32Array([
 	1.0, 1.0,
 ])
 
-export async function Setup() {
+export async function Setup(): Promise<void> {
 	adapter = await window.navigator.gpu.requestAdapter() as GPUAdapter
 	device = await adapter.requestDevice() as GPUDevice
 	let module = await Module.New("../shaders/quad.wgsl")

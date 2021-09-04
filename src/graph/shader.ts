@@ -1,5 +1,4 @@
-import * as box from './box.js'
-import * as graph from './graph.js'
+import * as Box from './box.js'
 import * as GPU from '../gpu/gpu.js'
 import * as Texture from '../gpu/texture.js'
 import * as Request from '../helper/request.js'
@@ -52,13 +51,13 @@ export async function New(): Promise<void> {
 	}
 }
 
-export async function NewWithName(name: string): Promise<box.Box> {
+export async function NewWithName(name: string): Promise<Box.Box> {
 	let info = infos[name]
 	let compute = await GPU.NewCompute("../shaders/" + name + ".wgsl")
 	let body = document.createElement("div")
 	body.className = "shader"
 	body.innerHTML = name
-	let b = box.New(200, 200, info.inputs)
+	let b = Box.New(200, 200, info.inputs)
 	b.append(body)
 
 	b.result = await Texture.Blanc(1, 1)

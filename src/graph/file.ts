@@ -1,5 +1,4 @@
-import * as box from './box.js'
-import * as graph from './graph.js'
+import * as Box from './box.js'
 import * as GPU from '../gpu/gpu.js'
 import * as Texture from '../gpu/texture.js'
 
@@ -19,7 +18,7 @@ export function New(): void {
 			case "png":
 			case "jpg": {
 				let img = document.createElement("img")
-				let b = box.New(100, 100, 0)
+				let b = Box.New(100, 100, 0)
 				img.draggable = false
 				b.append(img)
 				b.update = async () => { }
@@ -31,7 +30,7 @@ export function New(): void {
 			case "mp4":
 			case "webm": {
 				let vid = document.createElement("video")
-				let b = box.New(100, 100, 0)
+				let b = Box.New(100, 100, 0)
 				b.append(vid)
 				b.update = async () => { }
 				b.updated = true

@@ -92,12 +92,15 @@ export function New(x: number, y: number, maxInputs: number): Box {
 	}
 	box.ondragenter = (ev) => {
 		ev.stopPropagation()
-		if (dragged != null) {
-			if (dragged.start != box) {
-				dragged.end = box
+		setTimeout(() => {
+			if (dragged != null) {
+				if (dragged.start != box) {
+					dragged.end = box
+				}
 			}
-		}
+		}) //delay because enter of the child fires before the leave
 	}
+
 	box.ondragleave = (ev) => {
 		ev.stopPropagation()
 		if (dragged != null) {

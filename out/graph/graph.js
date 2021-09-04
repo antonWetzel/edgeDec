@@ -1,10 +1,11 @@
 import * as Shader from './shader.js';
+import * as Matrix from './matrix.js';
 import * as Template from './template.js';
 export let area;
 export let thrash;
 export let svg;
 let start = { x: 0, y: 0 };
-export function Setup(container) {
+export async function Setup(container) {
     area = container;
     svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     area.append(svg);
@@ -34,6 +35,7 @@ export function Setup(container) {
             start = { x: ev.clientX, y: ev.clientY };
         }
     };
-    Shader.Setup();
-    Template.Setup();
+    await Shader.Setup();
+    await Matrix.Setup();
+    await Template.Setup();
 }

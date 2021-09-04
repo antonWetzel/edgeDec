@@ -1,7 +1,4 @@
 import * as Box from './box.js'
-import * as Graph from './graph.js'
-import * as GPU from '../gpu/gpu.js'
-import * as Texture from '../gpu/texture.js'
 import * as Request from '../helper/request.js'
 import * as Shader from './shader.js'
 

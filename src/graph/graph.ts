@@ -1,5 +1,6 @@
-import * as box from './box.js'
+import * as Box from './box.js'
 import * as Shader from './shader.js'
+import * as Matrix from './matrix.js'
 import * as Template from './template.js'
 
 export let area: HTMLElement
@@ -8,7 +9,7 @@ export let svg: SVGSVGElement
 
 let start = { x: 0, y: 0 }
 
-export function Setup(container: HTMLElement) {
+export async function Setup(container: HTMLElement): Promise<void> {
 	area = container
 	svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
 	area.append(svg)
@@ -35,12 +36,13 @@ export function Setup(container: HTMLElement) {
 			}
 			//skip svg and thrash
 			for (let i = 2; i < area.children.length; i++) {
-				let box = area.children[i] as box.Box
+				let box = area.children[i] as Box.Box
 				box.move(ev.clientX - start.x, ev.clientY - start.y)
 			}
 			start = { x: ev.clientX, y: ev.clientY }
 		}
 	}
-	Shader.Setup()
-	Template.Setup()
+	await Shader.Setup()
+	await Matrix.Setup()
+	await Template.Setup()
 }

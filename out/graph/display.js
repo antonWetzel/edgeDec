@@ -1,9 +1,9 @@
-import * as box from './box.js';
+import * as Box from './box.js';
 import * as GPU from '../gpu/gpu.js';
 import * as Texture from '../gpu/texture.js';
 export async function New() {
     let c = await GPU.Create();
-    let b = box.New(300, 300, 1);
+    let b = Box.New(300, 300, 1);
     b.append(c);
     b.result = await Texture.Blanc(1, 1);
     b.update = async () => {

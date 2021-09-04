@@ -40,12 +40,25 @@ button {
 .box {
 	position: absolute;
 	border: 5px solid black;
-	background-color: magenta;
+	background-color: darkmagenta;
 }
 
-/* who thought the enter event of the child should fire before the leave of the parent? */
-.box * {
-	pointer-events: none;
+.box>.top{
+	min-width: 150px;
+	background-color: white;
+	display: flex;
+	border-bottom: 3px solid black;
+}
+.box>table {
+	background-color: white;
+	font-size: x-large;
+	padding: 10px 20px; 
+	width: 100%;
+}
+td {
+	text-align: center;
+	border-collapse: collapse;
+	padding: 1.5px 6px; 
 }
 
 img, video {
@@ -70,18 +83,16 @@ svg {
 	overflow: scroll;
 }
 .scroll>*{
-	width: 60%;
+	width: 100%;
 }
 .scroll {
-	margin: 10%;
-	width: 80%;
+	margin: 20%;
+	width: 60%;
 	display: flex;
 	flex-direction:column;
 	align-items: center;
 }
-input {
-	width: 80%;
-}
+
 .thrash {
 	position:absolute;
 	width: 200px;
@@ -89,7 +100,7 @@ input {
 	margin-left: -100px;
 	margin-top: -100px;
 	border-radius: 50%;
-	background-color: red;
+	background-color: darkred;
 	border: 3px solid black;
 }
 
@@ -110,7 +121,7 @@ input {
 	display: flex;
 }
 .shader>.bot>input {
-	width: 85%;
+	flex-grow: 10;
 }
 .shader>.bot>.number {
 	flex-grow: 1;
