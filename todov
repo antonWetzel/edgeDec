@@ -1,0 +1,52 @@
+{
+	"categories": [
+		{
+			"name": "Todo",
+			"notes": [
+				{
+					"name": "Cleanup",
+					"points": [
+						"calls in template"
+					]
+				},
+				{
+					"name": "QOL",
+					"points": [
+						"sort shaders inf"
+					]
+				},
+				{
+					"name": "Matrix",
+					"points": [
+						"New Category"
+					]
+				},
+				{
+					"name": "Readme",
+					"points": []
+				},
+				{
+					"name": "Helptext",
+					"points": []
+				}
+			]
+		},
+		{
+			"name": "Other",
+			"notes": [
+				{
+					"name": "QOL",
+					"points": [
+						"categories for shader"
+					]
+				},
+				{
+					"name": "Speed",
+					"points": [
+						"better conversion from video"
+					]
+				}
+			]
+		}
+	]
+}

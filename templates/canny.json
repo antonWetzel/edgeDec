@@ -1,0 +1,69 @@
+[
+	{
+		"name": "gaus",
+		"inputs": []
+	},
+	{
+		"name": "gray",
+		"inputs": [
+			0
+		]
+	},
+	{
+		"name": "sobelX",
+		"inputs": [
+			1
+		]
+	},
+	{
+		"name": "sobelY",
+		"inputs": [
+			1
+		]
+	},
+	{
+		"name": "edgeValue",
+		"inputs": [
+			2
+		]
+	},
+	{
+		"name": "edgeValue",
+		"inputs": [
+			3
+		]
+	},
+	{
+		"name": "euclidean",
+		"inputs": [
+			4,
+			5
+		]
+	},
+	{
+		"name": "grad",
+		"inputs": [
+			2,
+			3
+		]
+	},
+	{
+		"name": "suppression",
+		"inputs": [
+			6,
+			7
+		]
+	},
+	{
+		"name": "threshhold",
+		"inputs": [
+			8
+		]
+	},
+	{
+		"name": "inverse",
+		"inputs": [
+			9
+		]
+	}
+]
