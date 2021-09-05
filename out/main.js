@@ -1,6 +1,5 @@
 import * as Graph from './graph/graph.js';
-import * as Webcam from './graph/webcam.js';
-import * as File from './graph/file.js';
+import * as Source from './graph/source.js';
 import * as Shader from './graph/shader.js';
 import * as Matrix from './graph/matrix.js';
 import * as Display from './graph/display.js';
@@ -16,11 +15,11 @@ document.body.onload = async () => {
         }
         x.onclick = cb;
     };
-    setupButton("file", File.New);
-    setupButton("display", Display.New);
-    setupButton("shader", Shader.New);
-    setupButton("matrix", Matrix.New);
-    setupButton("webcam", Webcam.New);
+    setupButton("file", () => { Source.File(); });
+    setupButton("display", () => { new Display.Display().Setup(); });
+    setupButton("shader", () => { Shader.New(); });
+    setupButton("matrix", () => { new Matrix.Matrix().Setup(); });
+    setupButton("webcam", () => { Source.Webcam(); });
     setupButton("template", Template.New);
     await GPU.Setup();
     Graph.Setup(area);

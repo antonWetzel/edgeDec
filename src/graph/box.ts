@@ -2,247 +2,239 @@
 import * as Graph from './graph.js'
 import * as GPU from '../gpu/gpu.js'
 
-export interface Box extends HTMLDivElement {
+export abstract class Box {
 	inputs: Line[]
 	outputs: Line[]
-	delete: () => void
-	move: (x: number, y: number) => void
-	cycleCheck: (checked: Box) => boolean
 	maxInputs: number
-
 	updated: boolean
-	recursiveReset: () => void
-	recursiveUpdate: () => Promise<void>
-
-	update: () => Promise<void>
 	result: GPU.Texture
-}
+	body: HTMLElement
+	x: number
+	y: number
 
-interface Line extends SVGLineElement {
-	start: Box,
-	end: Box
-	delete: () => void
-}
+	constructor(x: number, y: number, maxInputs: number) {
+		this.body = document.createElement("div")
+		this.body.className = "box"
+		this.inputs = []
+		this.outputs = []
+		this.maxInputs = maxInputs
+		this.updated = false
+		this.result = undefined as any
 
-let dragged: Line | null = null
+		this.x = x
+		this.y = y
+		this.body.draggable = true
 
-export function New(x: number, y: number, maxInputs: number): Box {
-	let box = document.createElement("div") as Box
-	box.className = "box"
-	box.inputs = []
-	box.outputs = []
-	box.maxInputs = maxInputs
-	box.updated = false
-	setPostion(box, x, y)
-	Graph.area.append(box)
-	box.draggable = true
-	box.delete = () => {
-		for (let i = 0; i < box.outputs.length; i++) {
-			let end = box.outputs[i].end
-			let idx = end.inputs.indexOf(box.outputs[i])
-			end.inputs.splice(idx, 1)
-			box.outputs[i].remove()
-		}
-		for (let i = 0; i < box.inputs.length; i++) {
-			let start = box.inputs[i].start
-			let idx = start.outputs.indexOf(box.inputs[i])
-			start.outputs.splice(idx, 1)
-			box.inputs[i].remove()
-		}
-		box.inputs = []
-		box.outputs = []
-		box.remove()
-	}
-	box.ondragstart = (ev) => {
-		ev.stopPropagation()
-		ev.stopImmediatePropagation()
-		if (ev.ctrlKey) {
-			dragged = newLine(box)
-		} else {
-			Graph.thrash.style.display = "unset"
-		}
-
-		let div = document.createElement("div")
-		if (ev.dataTransfer != null) {
-			ev.dataTransfer.setDragImage(div, 0, 0)
-		}
-	}
-
-	box.ondrag = (ev) => {
-		ev.stopPropagation()
-		if (ev.pageX != 0 || ev.pageY != 0) {
-			if (dragged == null) {
-				setPostion(box, ev.pageX, ev.pageY)
-				let { x, y } = position(box)
-				for (let i = 0; i < box.outputs.length; i++) {
-					box.outputs[i].setAttribute("x1", x.toString() + "px")
-					box.outputs[i].setAttribute("y1", y.toString() + "px")
-				}
-				for (let i = 0; i < box.inputs.length; i++) {
-					box.inputs[i].setAttribute("x2", x.toString() + "px")
-					box.inputs[i].setAttribute("y2", y.toString() + "px")
-				}
+		this.body.ondragstart = (ev) => {
+			ev.stopPropagation()
+			ev.stopImmediatePropagation()
+			if (ev.ctrlKey) {
+				dragged = new Line(this)
 			} else {
-				let x = ev.pageX - Graph.area.offsetLeft
-				let y = ev.pageY - Graph.area.offsetTop
-				dragged.setAttribute("x2", x.toString() + "px")
-				dragged.setAttribute("y2", y.toString() + "px")
+				Graph.thrash.style.display = "unset"
+			}
+
+			let div = document.createElement("div")
+			if (ev.dataTransfer != null) {
+				ev.dataTransfer.setDragImage(div, 0, 0)
 			}
 		}
-	}
-	box.ondragenter = (ev) => {
-		ev.stopPropagation()
-		setTimeout(() => {
-			if (dragged != null) {
-				if (dragged.start != box) {
-					dragged.end = box
-				}
-			}
-		}) //delay because enter of the child fires before the leave
-	}
 
-	box.ondragleave = (ev) => {
-		ev.stopPropagation()
-		if (dragged != null) {
-			if (dragged.start != box) {
-				if (ev.pageX != 0 && ev.pageY != 0) {
-					dragged.end = undefined as any
-				}
-			}
-		}
-	}
-
-	box.ondragend = async (ev) => {
-		ev.stopPropagation()
-		ev.preventDefault()
-		if (dragged != null) {
-			if (dragged.end != undefined) {
-				let start = dragged.start
-				let end = dragged.end
-				for (let i = 0; i < start.outputs.length; i++) {
-					if (start.outputs[i].end == end) {
-						start.outputs[i].delete()
-						dragged.remove()
+		this.body.ondrag = (ev) => {
+			ev.stopPropagation()
+			if (ev.x != 0 && ev.y != 0) {
+				if (dragged == null) {
+					if (ev.pageX != ev.screenX) {
 						return
 					}
+					this.moveTo(ev.x, ev.y)
+					for (let i = 0; i < this.outputs.length; i++) {
+						this.outputs[i].setStart(this.x, this.y)
+					}
+					for (let i = 0; i < this.inputs.length; i++) {
+						this.inputs[i].setEnd(this.x, this.y)
+					}
+				} else {
+					let x = ev.x
+					let y = ev.y
+					dragged.setEnd(x, y)
 				}
-				for (let i = 0; i < start.inputs.length; i++) {
-					if (start.inputs[i].start == end) {
-						start.inputs[i].delete()
-						break
+			}
+		}
+		this.body.ondragenter = (ev) => {
+			ev.stopPropagation()
+			setTimeout(() => {
+				if (dragged != null) {
+					if (dragged.start != this) {
+						dragged.end = this
 					}
 				}
-				if (end.cycleCheck(start)) {
-					dragged.remove()
-					return
-				}
-				start.outputs.push(dragged)
-				end.inputs.push(dragged)
-				let { x, y } = position(end)
-				dragged.setAttribute("x2", x.toString() + "px")
-				dragged.setAttribute("y2", y.toString() + "px")
-				if (end.inputs.length > end.maxInputs) {
-					end.inputs[0].delete()
-				}
-				end.recursiveReset()
-				GPU.Start()
-				await end.recursiveUpdate()
-				GPU.End()
-			} else {
-				dragged.remove()
-			}
-			dragged = null
-		} else {
-			Graph.thrash.style.display = "none"
-			let p = position(box)
-			if (p.x * p.x + p.y * p.y < 100 * 100) {
-				box.delete()
-			}
+			}) //delay because enter of the child fires before the leave
 		}
-	}
-	box.move = (x: number, y: number) => {
 
-		let p = position(box)
-		p.x += x
-		p.y += y
-		setPostion(box, p.x, p.y)
-		for (let i = 0; i < box.outputs.length; i++) {
-			box.outputs[i].setAttribute("x1", p.x.toString() + "px")
-			box.outputs[i].setAttribute("y1", p.y.toString() + "px")
+		this.body.ondragleave = (ev) => {
+			ev.stopPropagation()
+			if (dragged != null) {
+				if (dragged.start != this) {
+					if (ev.screenX != 0 && ev.screenY != 0) {
+						dragged.end = undefined as any
+					}
+				}
+			}
 		}
-		for (let i = 0; i < box.inputs.length; i++) {
-			box.inputs[i].setAttribute("x2", p.x.toString() + "px")
-			box.inputs[i].setAttribute("y2", p.y.toString() + "px")
+
+		this.body.ondragend = async (ev) => {
+			ev.stopPropagation()
+			ev.preventDefault()
+			if (dragged != null) {
+				if (dragged.end != undefined) {
+					let start = dragged.start
+					let end = dragged.end
+					for (let i = 0; i < start.outputs.length; i++) {
+						if (start.outputs[i].end == end) {
+							dragged.delete()
+							start.outputs[i].delete()
+							return
+						}
+					}
+					for (let i = 0; i < start.inputs.length; i++) {
+						if (start.inputs[i].start == end) {
+							start.inputs[i].delete()
+							break
+						}
+					}
+					if (end.cycleCheck(start)) {
+						dragged.delete()
+						return
+					}
+					start.outputs.push(dragged)
+					end.inputs.push(dragged)
+					dragged.setEnd(end.x, end.y)
+					if (end.inputs.length > end.maxInputs) {
+						end.inputs[0].delete()
+					}
+					end.recursiveReset()
+					GPU.Start()
+					await end.recursiveUpdate()
+					GPU.End()
+				} else {
+					dragged.delete()
+				}
+				dragged = null
+			} else {
+				Graph.thrash.style.display = "none"
+				if (this.x * this.x + this.y * this.y < 100 * 100) {
+					this.delete()
+				}
+			}
 		}
-		setPostion(box, p.x, p.y)
 	}
-	box.cycleCheck = (checked: Box): boolean => {
-		if (checked == box) {
+
+	delete(): void {
+		while (this.outputs.length > 0) {
+			this.outputs[0].delete()
+		}
+		while (this.inputs.length > 0) {
+			this.inputs[0].delete()
+		}
+		Graph.RemoveBox(this)
+	}
+
+	moveBy(x: number, y: number): void {
+		this.moveTo(this.x + x, this.y + y)
+	}
+
+	moveTo(x: number, y: number): void {
+		this.x = x
+		this.y = y
+		let xOff = (x - Graph.area.offsetLeft) - this.body.offsetWidth / 2
+		let yOFF = (y - Graph.area.offsetTop) - this.body.offsetHeight / 2
+		for (let i = 0; i < this.outputs.length; i++) {
+			this.outputs[i].setStart(x, y)
+		}
+		for (let i = 0; i < this.inputs.length; i++) {
+			this.inputs[i].setEnd(x, y)
+		}
+		this.body.style.marginLeft = xOff.toString() + "px"
+		this.body.style.marginTop = yOFF.toString() + "px"
+	}
+
+	cycleCheck(checked: Box): boolean {
+		if (checked == this) {
 			return true
 		}
-		for (let i = 0; i < box.outputs.length; i++) {
-			if (box.outputs[i].end.cycleCheck(checked)) {
+		for (let i = 0; i < this.outputs.length; i++) {
+			if (this.outputs[i].end.cycleCheck(checked)) {
 				return true
 			}
 		}
 		return false
 	}
 
-	box.recursiveUpdate = async () => {
-		for (let i = 0; i < box.inputs.length; i++) {
-			if (box.inputs[i].start.updated == false) {
+	recursiveReset(): void {
+		if (this.updated) {
+			this.updated = false
+			for (let i = 0; i < this.outputs.length; i++) {
+				this.outputs[i].end.recursiveReset()
+			}
+		}
+	}
+	async recursiveUpdate(): Promise<void> {
+		for (let i = 0; i < this.inputs.length; i++) {
+			if (this.inputs[i].start.updated == false) {
 				return
 			}
 		}
-		await box.update()
-		box.updated = true
-		for (let i = 0; i < box.outputs.length; i++) {
-			await box.outputs[i].end.recursiveUpdate()
+		await this.update()
+		this.updated = true
+		for (let i = 0; i < this.outputs.length; i++) {
+			await this.outputs[i].end.recursiveUpdate()
 		}
 	}
 
-	box.recursiveReset = () => {
-		if (box.updated) {
-			box.updated = false
-			for (let i = 0; i < box.outputs.length; i++) {
-				box.outputs[i].end.recursiveReset()
+	abstract update(): Promise<void>
+}
+
+let dragged: Line | null = null
+
+export class Line {
+	line: SVGLineElement
+	start: Box
+	end: Box
+
+	constructor(start: Box) {
+		this.line = document.createElementNS("http://www.w3.org/2000/svg", "line")
+		this.start = start
+		this.end = undefined as any
+		this.line.setAttribute("x1", start.x.toString())
+		this.line.setAttribute("y1", start.y.toString())
+		this.line.setAttribute("x2", start.x.toString())
+		this.line.setAttribute("y2", start.y.toString())
+		Graph.svg.append(this.line)
+	}
+
+	delete(): void {
+		if (this.start != undefined) {
+			let idx = this.start.outputs.indexOf(this)
+			if (idx >= 0) {
+				this.start.outputs.splice(idx, 1)
 			}
 		}
+		if (this.end != undefined) {
+			let idx = this.end.inputs.indexOf(this)
+			if (idx >= 0) {
+				this.end.inputs.splice(idx, 1)
+			}
+		}
+		this.line.remove()
 	}
 
-	return box
-}
-
-export function newLine(start: Box): Line {
-
-	let line = document.createElementNS("http://www.w3.org/2000/svg", "line") as Line
-	line.start = start
-	let p = position(start)
-	line.setAttribute("x1", p.x.toString())
-	line.setAttribute("y1", p.y.toString())
-	line.setAttribute("x2", p.x.toString())
-	line.setAttribute("y2", p.y.toString())
-
-	Graph.svg.append(line)
-
-	line.delete = () => {
-		let idx = line.start.outputs.indexOf(line)
-		line.start.outputs.splice(idx, 1)
-		idx = line.end.inputs.indexOf(line)
-		line.end.inputs.splice(idx, 1)
-		line.remove()
+	setStart(x: number, y: number) {
+		this.line.setAttribute("x1", x.toString() + "px")
+		this.line.setAttribute("y1", y.toString() + "px")
 	}
-	return line
-}
-
-export function position(element: HTMLElement): { x: number, y: number } {
-	let x = element.offsetLeft + element.clientWidth / 2 + Graph.area.clientLeft
-	let y = element.offsetTop + element.clientHeight / 2 + Graph.area.clientTop
-	return { x: x, y: y }
-}
-
-
-export function setPostion(element: HTMLElement, x: number, y: number) {
-	element.style.left = (x - element.clientWidth / 2 - Graph.area.clientLeft).toString() + "px"
-	element.style.top = (y - element.clientHeight / 2 - Graph.area.clientTop).toString() + "px"
+	setEnd(x: number, y: number) {
+		this.line.setAttribute("x2", x.toString() + "px")
+		this.line.setAttribute("y2", y.toString() + "px")
+	}
 }

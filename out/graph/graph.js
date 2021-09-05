@@ -4,11 +4,14 @@ import * as Template from './template.js';
 export let area;
 export let thrash;
 export let svg;
-let start = { x: 0, y: 0 };
+let start;
+let all;
 export async function Setup(container) {
     area = container;
     svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     area.append(svg);
+    all = [];
+    start = { x: 0, y: 0 };
     thrash = document.createElement("div");
     thrash.className = "thrash";
     thrash.style.display = "none";
@@ -27,10 +30,12 @@ export async function Setup(container) {
             if (ev.clientX == 0 && ev.clientY == 0) {
                 return;
             }
-            //skip svg and thrash
-            for (let i = 2; i < area.children.length; i++) {
-                let box = area.children[i];
-                box.move(ev.clientX - start.x, ev.clientY - start.y);
+            if (ev.pageX != ev.screenX) {
+                return;
+            }
+            for (let i = 0; i < all.length; i++) {
+                let box = all[i];
+                box.moveBy(ev.clientX - start.x, ev.clientY - start.y);
             }
             start = { x: ev.clientX, y: ev.clientY };
         }
@@ -38,4 +43,13 @@ export async function Setup(container) {
     await Shader.Setup();
     await Matrix.Setup();
     await Template.Setup();
+}
+export function AddBox(box) {
+    all.push(box);
+    area.append(box.body);
+}
+export function RemoveBox(box) {
+    let idx = all.indexOf(box);
+    all.splice(idx, 1);
+    area.removeChild(box.body);
 }

@@ -38,9 +38,11 @@ button {
 
 
 .box {
+	min-width: 10px;
+	min-height: 10px;
 	position: absolute;
 	border: 5px solid black;
-	background-color: darkmagenta;
+	background-color: white;
 }
 
 .box>.top{
@@ -62,6 +64,7 @@ td {
 }
 
 img, video {
+	image-rendering: pixelated;
 	vertical-align: middle;
 }
 canvas {

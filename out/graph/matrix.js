@@ -1,52 +1,89 @@
 import * as Box from './box.js';
+import * as Graph from './graph.js';
 import * as GPU from '../gpu/gpu.js';
 import * as Texture from '../gpu/texture.js';
 let compute;
 export async function Setup() {
     compute = await GPU.NewCompute("../shaders/matrix.wgsl");
 }
-export async function New() {
-    let b = Box.New(100, 100, 1);
-    let data = [
-        [-1, 0, 0],
-        [-2, 0, 0],
-        [1, 0, 0],
-    ];
-    let buffer;
-    let negative = false;
-    let updateBuffer = () => {
-        let floats = new Float32Array(3 + data.length * data.length);
-        let min = 0;
-        let max = 0;
-        for (let i = 0; i < data.length; i++) {
-            for (let j = 0; j < data.length; j++) {
-                if (negative && data[i][j] < 0) {
-                    min += data[i][j];
+export class Matrix extends Box.Box {
+    constructor() {
+        super(250, 250, 1);
+        this.data = [
+            [-1, 0, 1],
+            [-2, 0, 2],
+            [-1, 0, 1],
+        ];
+        this.negative = true;
+        this.buffer = this.updateBuffer();
+        let top = document.createElement("div");
+        top.className = "top";
+        this.body.append(top);
+        this.table = document.createElement("table");
+        this.body.append(this.table);
+        let decrease = document.createElement("button");
+        decrease.onclick = async () => {
+            if (this.data.length > 1) {
+                this.data.pop();
+                for (let i = 0; i < this.data.length; i++) {
+                    this.data[i].pop();
                 }
-                else {
-                    max += data[i][j];
-                }
+                this.buffer = this.updateBuffer();
+                this.updateTable();
+                GPU.Start();
+                this.recursiveReset();
+                await this.recursiveUpdate();
+                GPU.End();
             }
-        }
-        floats.set([data.length, min, max], 0);
-        for (let i = 0; i < data.length; i++) {
-            floats.set(data[i], 3 + i * data.length);
-        }
-        buffer = GPU.CreateBuffer(floats, GPUBufferUsage.STORAGE);
-    };
-    updateBuffer();
-    let top = document.createElement("div");
-    top.className = "top";
-    b.append(top);
-    let table = document.createElement("table");
-    b.append(table);
-    let updateTable = () => {
-        table.innerHTML = "";
-        for (let i = 0; i < data.length; i++) {
+        };
+        decrease.innerText = "-";
+        top.append(decrease);
+        let shift = document.createElement("button");
+        shift.onclick = async () => {
+            this.negative = !this.negative;
+            this.buffer = this.updateBuffer();
+            GPU.Start();
+            this.recursiveReset();
+            await this.recursiveUpdate();
+            GPU.End();
+        };
+        shift.innerText = "~";
+        shift.title = ("Toggle normalization between (min -> 0 | max -> 1) and (0 -> 0 | <max+min> -> 1)\n" +
+            "min: sum of negative values\n" +
+            "max: sum of positive values");
+        top.append(shift);
+        let increase = document.createElement("button");
+        increase.onclick = async () => {
+            let row = [];
+            for (let i = 0; i < this.data.length; i++) {
+                this.data[i].push(0);
+                row.push(0);
+            }
+            row.push(0);
+            this.data.push(row);
+            this.buffer = this.updateBuffer();
+            this.updateTable();
+            GPU.Start();
+            this.recursiveReset();
+            await this.recursiveUpdate();
+            GPU.End();
+        };
+        increase.innerText = "+";
+        top.append(increase);
+        this.updateTable();
+    }
+    async Setup() {
+        this.result = await Texture.Blanc(1, 1);
+        this.moveBy(0, 0);
+        Graph.AddBox(this);
+    }
+    updateTable() {
+        this.table.innerHTML = "";
+        for (let i = 0; i < this.data.length; i++) {
             let row = document.createElement("tr");
-            for (let j = 0; j < data.length; j++) {
+            for (let j = 0; j < this.data.length; j++) {
                 let cell = document.createElement("td");
-                cell.innerText = data[i][j].toString();
+                cell.innerText = this.data[i][j].toString();
                 cell.onclick = (ev) => {
                     ev.stopPropagation();
                     let area = document.createElement("div");
@@ -81,61 +118,49 @@ export async function New() {
                     area.onclick = async () => {
                         area.remove();
                         cell.innerText = input.value;
-                        data[i][j] = parseFloat(input.value);
-                        updateBuffer();
+                        this.data[i][j] = parseFloat(input.value);
+                        this.buffer = this.updateBuffer();
+                        GPU.Start();
+                        this.recursiveReset();
+                        await this.recursiveUpdate();
+                        GPU.End();
                     };
                 };
                 row.append(cell);
             }
-            table.append(row);
+            this.table.append(row);
         }
-    };
-    updateTable();
-    let decrease = document.createElement("button");
-    decrease.onclick = () => {
-        if (data.length > 1) {
-            data.pop();
-            for (let i = 0; i < data.length; i++) {
-                data[i].pop();
-            }
-            updateBuffer();
-            updateTable();
-        }
-    };
-    decrease.innerText = "-";
-    top.append(decrease);
-    let shift = document.createElement("button");
-    shift.onclick = () => {
-        negative = !negative;
-        updateBuffer();
-    };
-    shift.innerText = "~";
-    top.append(shift);
-    let increase = document.createElement("button");
-    increase.onclick = () => {
-        let row = [];
-        for (let i = 0; i < data.length; i++) {
-            data[i].push(0);
-            row.push(0);
-        }
-        row.push(0);
-        data.push(row);
-        updateBuffer();
-        updateTable();
-    };
-    increase.innerText = "+";
-    top.append(increase);
-    b.result = await Texture.Blanc(1, 1);
-    b.update = async () => {
-        if (b.inputs.length == 1) {
-            let input = b.inputs[0].start;
+    }
+    async update() {
+        if (this.inputs.length == 1) {
+            let input = this.inputs[0].start;
             if (input.result.width == 1 && input.result.height == 1) {
                 return;
             }
-            if (input.result.width != b.result.width || input.result.height != b.result.height) {
-                b.result = await Texture.Blanc(input.result.width, input.result.height);
+            if (input.result.width != this.result.width || input.result.height != this.result.height) {
+                this.result = await Texture.Blanc(input.result.width, input.result.height);
             }
-            compute.Calculate([input.result], buffer, b.result);
+            compute.Calculate([input.result], this.buffer, this.result);
         }
-    };
+    }
+    updateBuffer() {
+        let floats = new Float32Array(3 + this.data.length * this.data.length);
+        let min = 0;
+        let max = 0;
+        for (let i = 0; i < this.data.length; i++) {
+            for (let j = 0; j < this.data.length; j++) {
+                if (this.negative && this.data[i][j] < 0) {
+                    min += this.data[i][j];
+                }
+                else {
+                    max += this.data[i][j];
+                }
+            }
+        }
+        floats.set([this.data.length, min, max], 0);
+        for (let i = 0; i < this.data.length; i++) {
+            floats.set(this.data[i], 3 + i * this.data.length);
+        }
+        return GPU.CreateBuffer(floats, GPUBufferUsage.STORAGE);
+    }
 }

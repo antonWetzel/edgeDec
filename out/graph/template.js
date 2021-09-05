@@ -32,9 +32,10 @@ export async function New() {
             let boxes = [];
             for (let i = 0; i < template.length; i++) {
                 let info = template[i];
-                let box = await Shader.NewWithName(info.name);
+                let box = new Shader.Shader();
+                box.Setup(info.name);
                 for (let i = 0; i < info.inputs.length; i++) {
-                    let line = Box.newLine(boxes[info.inputs[i]]);
+                    let line = new Box.Line(boxes[info.inputs[i]]);
                     line.end = box;
                     boxes[info.inputs[i]].outputs.push(line);
                     box.inputs.push(line);
@@ -43,17 +44,17 @@ export async function New() {
             }
             for (let i = 0; i < boxes.length; i++) {
                 let box = boxes[i];
-                let x = Box.position(box).x;
+                let x = box.x;
                 for (let i = 0; i < box.inputs.length; i++) {
-                    let p = Box.position(box.inputs[i].start);
-                    x = Math.max(x, p.x + 225);
+                    let start = box.inputs[i].start;
+                    x = Math.max(x, start.x + 150);
                 }
-                Box.setPostion(box, x, 100);
+                box.moveBy(x, 0);
             }
             let counts = {};
             for (let i = 0; i < boxes.length; i++) {
                 let box = boxes[i];
-                let x = Box.position(box).x;
+                let x = box.x;
                 let y = counts[x];
                 if (y == undefined) {
                     counts[x] = 1;
@@ -62,7 +63,13 @@ export async function New() {
                 else {
                     counts[x] = y + 1;
                 }
-                box.move(0, y * 100);
+                box.moveBy(0, 0 + y * 100);
+            }
+            //disgusting solution for alligment
+            for (let i = 0; i < boxes.length; i++) {
+                setTimeout(() => {
+                    boxes[i].moveBy(3, 3);
+                }, 10);
             }
         };
     }

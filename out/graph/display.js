@@ -1,23 +1,48 @@
 import * as Box from './box.js';
 import * as GPU from '../gpu/gpu.js';
 import * as Texture from '../gpu/texture.js';
-export async function New() {
-    let c = await GPU.Create();
-    let b = Box.New(300, 300, 1);
-    b.append(c);
-    b.result = await Texture.Blanc(1, 1);
-    b.update = async () => {
-        if (b.inputs.length == 1) {
-            let input = b.inputs[0].start;
+import * as Graph from './graph.js';
+export class Display extends Box.Box {
+    constructor() {
+        super(400, 400, 1);
+        this.canvas = undefined;
+        this.zoom = 1;
+    }
+    async Setup() {
+        this.canvas = await GPU.Create();
+        this.body.append(this.canvas);
+        this.result = await Texture.Blanc(1, 1);
+        this.body.onwheel = (ev) => {
+            this.zoom *= 1 + ev.deltaY / 1000;
+            if (this.result.width != 1 || this.result.height != 1) {
+                if (this.result.width * this.zoom < 30) {
+                    this.zoom = 30 / this.result.width;
+                }
+                else if (this.result.width * this.zoom > 2000) {
+                    this.zoom = 2000 / this.result.width;
+                }
+                this.canvas.resize(this.result.width * this.zoom, this.result.height * this.zoom);
+                this.moveBy(0, 0);
+                GPU.Start();
+                this.update();
+                GPU.End();
+            }
+        };
+        this.moveBy(0, 0);
+        Graph.AddBox(this);
+    }
+    async update() {
+        if (this.inputs.length == 1) {
+            let input = this.inputs[0].start;
             if (input.result.width == 1 && input.result.height == 1) {
                 return;
             }
-            b.result = input.result;
-            if (c.width != b.result.width || c.height != b.result.height) {
-                c.resize(b.result.width, b.result.height);
-                setTimeout(b.move, 0, 0, 0);
+            if (input.result.width != this.result.width || input.result.height != this.result.height) {
+                this.canvas.resize(input.result.width * this.zoom, input.result.height * this.zoom);
+                this.moveBy(0, 0);
             }
-            c.draw(b.result);
+            this.result = input.result;
+            this.canvas.draw(this.result);
         }
-    };
+    }
 }

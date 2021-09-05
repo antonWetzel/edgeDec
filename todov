@@ -4,29 +4,21 @@
 			"name": "Todo",
 			"notes": [
 				{
-					"name": "Cleanup",
-					"points": [
-						"function for shared"
-					]
-				},
-				{
 					"name": "QOL",
 					"points": [
 						"sort shaders infos"
 					]
 				},
 				{
-					"name": "Matrix",
+					"name": "Readme",
 					"points": []
 				},
 				{
-					"name": "Readme",
-					"points": [
-						"New Category"
-					]
+					"name": "Helptext",
+					"points": []
 				},
 				{
-					"name": "Helptext",
+					"name": "bugged drag on zoom",
 					"points": []
 				}
 			]
@@ -44,8 +36,7 @@
 				{
 					"name": "Speed",
 					"points": [
-						"better conversion from video",
-						"other compute size"
+						"better conversion from video"
 					]
 				}
 			]

@@ -57,7 +57,7 @@ export async function Setup(): Promise<void> {
 	quadBuffer = CreateBuffer(vertices, GPUBufferUsage.VERTEX)
 	sampler = device.createSampler({
 		minFilter: "linear",
-		magFilter: "linear",
+		magFilter: "nearest",
 	})
 }
 

@@ -49,7 +49,7 @@ export async function Setup() {
     quadBuffer = CreateBuffer(vertices, GPUBufferUsage.VERTEX);
     sampler = device.createSampler({
         minFilter: "linear",
-        magFilter: "linear",
+        magFilter: "nearest",
     });
 }
 export async function Create() {

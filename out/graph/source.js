@@ -5,25 +5,50 @@ import * as Graph from './graph.js';
 export class Source extends Box.Box {
     constructor() {
         super(100, 100, 0);
+        this.zoom = 1;
+        this.width = 1;
+        this.height = 1;
     }
-    async SetupImage(file) {
+    async SetupImage(src) {
         let img = document.createElement("img");
         img.draggable = false;
         this.body.append(img);
-        img.src = URL.createObjectURL(file);
+        img.src = URL.createObjectURL(src);
         this.result = await Texture.FromImage(img);
         this.updated = true;
+        this.width = img.width;
+        this.height = img.height;
+        this.body.onwheel = (ev) => {
+            this.zoom *= 1 + ev.deltaY / 1000;
+            if (this.result.width * this.zoom < 30) {
+                this.zoom = 30 / this.result.width;
+            }
+            else if (this.result.width * this.zoom > 2000) {
+                this.zoom = 2000 / this.result.width;
+            }
+            img.width = this.width * this.zoom;
+            img.height = this.height * this.zoom;
+            this.moveBy(0, 0);
+        };
+        this.moveBy(0, 0);
         Graph.AddBox(this);
     }
-    async SetupVIdeo(file) {
+    async SetupVIdeo(src) {
         let vid = document.createElement("video");
         this.body.append(vid);
-        vid.src = URL.createObjectURL(file);
+        if ("active" in src) {
+            vid.srcObject = src;
+        }
+        else {
+            vid.src = URL.createObjectURL(src);
+        }
         vid.volume = 0;
         vid.autoplay = true;
         vid.loop = true;
         let handle;
         vid.onplay = () => {
+            this.width = vid.videoWidth;
+            this.height = vid.videoHeight;
             let cb = async () => {
                 this.result = await Texture.FromVideo(vid);
                 this.recursiveReset();
@@ -33,17 +58,30 @@ export class Source extends Box.Box {
                 handle = requestAnimationFrame(cb);
             };
             cb();
+            this.moveBy(0, 0);
         };
         vid.onpause = () => {
             cancelAnimationFrame(handle);
             vid.play();
+        };
+        this.body.onwheel = (ev) => {
+            this.zoom *= 1 + ev.deltaY / 1000;
+            if (this.result.width * this.zoom < 30) {
+                this.zoom = 30 / this.result.width;
+            }
+            else if (this.result.width * this.zoom > 2000) {
+                this.zoom = 2000 / this.result.width;
+            }
+            vid.width = this.width * this.zoom;
+            vid.height = this.height * this.zoom;
+            this.moveBy(0, 0);
         };
         this.updated = true;
         Graph.AddBox(this);
     }
     async update() { }
 }
-export async function New() {
+export async function File() {
     let input = document.createElement("input");
     input.type = "file";
     input.accept = 'image/png,image/jpeg,video/mp4,video/webm';
@@ -71,4 +109,14 @@ export async function New() {
         }
     };
     input.click();
+}
+export async function Webcam() {
+    try {
+        let stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        let cam = new Source();
+        cam.SetupVIdeo(stream);
+    }
+    catch (ev) {
+        alert("webcam not found");
+    }
 }
