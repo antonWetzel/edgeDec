@@ -1,0 +1,47 @@
+{
+	"sobelX": {
+		"inputs": 1,
+		"tooltip": "Gradiant in x-direction of the local 3x3 area",
+		"parameter": []
+	},
+	"sobelY": {
+		"inputs": 1,
+		"tooltip": "Gradiant in y-direction of the local 3x3 area",
+		"parameter": []
+	},
+	"robertsA": {
+		"inputs": 1,
+		"tooltip": "Gradiant in the bot-left-direction of the local 2x2 area",
+		"parameter": []
+	},
+	"robertsB": {
+		"inputs": 1,
+		"tooltip": "Gradiant in the bot-right-direction of the local 2x2 area",
+		"parameter": []
+	},
+	"laplaceA": {
+		"inputs": 1,
+		"tooltip": "Difference to the vertical and horizontally pixels",
+		"parameter": []
+	},
+	"laplaceB": {
+		"inputs": 1,
+		"tooltip": "Difference to the vertical, horizontally and diagonally pixels",
+		"parameter": []
+	},
+	"edgeValue": {
+		"inputs": 1,
+		"tooltip": "Absolute Value of a edge value with sign",
+		"parameter": []
+	},
+	"grad": {
+		"inputs": 2,
+		"tooltip": "Direction of edges",
+		"parameter": []
+	},
+	"suppression": {
+		"inputs": 2,
+		"tooltip": "Limit edges to lines",
+		"parameter": []
+	}
+}

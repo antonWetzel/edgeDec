@@ -5,17 +5,22 @@ import * as Request from '../helper/request.js';
 import * as Graph from './graph.js';
 let infos;
 export async function Setup() {
-    infos = JSON.parse(await Request.getFile("../shaders/infos.json"));
+    let locations = JSON.parse(await Request.getFile("../shaders/info.json"));
+    infos = {};
+    for (let i = 0; i < locations.length; i++) {
+        let category = JSON.parse(await Request.getFile("../shaders/" + locations[i] + "/info.json"));
+        infos[locations[i]] = category;
+    }
 }
 export class Shader extends Box.Box {
     constructor() {
-        super(250, 250, 0);
+        super(450, 300, 0);
         this.compute = undefined;
         this.buffer = null;
     }
-    async Setup(name) {
-        let info = infos[name];
-        this.compute = await GPU.NewCompute("../shaders/" + name + ".wgsl");
+    async Setup(category, name) {
+        let info = infos[category][name];
+        this.compute = await GPU.NewCompute("../shaders/" + category + "/" + name + ".wgsl");
         let body = document.createElement("div");
         body.className = "shader";
         body.innerHTML = name;
@@ -26,7 +31,7 @@ export class Shader extends Box.Box {
         if (info.parameter.length > 0) {
             parameter = [];
             for (let i = 0; i < info.parameter.length; i++) {
-                parameter.push(info.parameter[i].min);
+                parameter.push(info.parameter[i].default);
             }
             this.buffer = GPU.CreateBuffer(new Float32Array(parameter), GPUBufferUsage.UNIFORM);
         }
@@ -61,7 +66,7 @@ export class Shader extends Box.Box {
                     div.append(bot);
                     bot.append(input);
                     bot.append(number);
-                    input.onchange = () => {
+                    input.oninput = () => {
                         parameter[i] = parseFloat(input.value);
                         number.innerText = input.value;
                     };
@@ -78,8 +83,8 @@ export class Shader extends Box.Box {
                 };
             }
         };
-        this.moveBy(0, 0);
         Graph.AddBox(this);
+        await this.moveBy(0, 0);
     }
     async update() {
         if (this.inputs.length != this.maxInputs) {
@@ -103,26 +108,33 @@ export async function New() {
     let area = document.createElement("div");
     area.className = "popArea";
     document.body.appendChild(area);
-    let scroll = document.createElement("scroll");
-    scroll.className = "scroll";
-    area.append(scroll);
     area.onclick = async () => {
         area.remove();
     };
-    for (let key in infos) {
-        let button = document.createElement("button");
-        let name = document.createElement("div");
-        name.className = "name";
-        name.innerText = key;
-        button.append(name);
-        let tooltip = document.createElement("div");
-        tooltip.className = "tooltip";
-        tooltip.innerText = infos[key].tooltip;
-        button.append(tooltip);
-        scroll.appendChild(button);
-        button.onclick = async (ev) => {
-            let shader = new Shader();
-            await shader.Setup(key);
-        };
+    for (let cateName in infos) {
+        let scroll = document.createElement("div");
+        scroll.className = "scroll";
+        area.append(scroll);
+        let head = document.createElement("div");
+        head.className = "head";
+        head.innerText = cateName;
+        scroll.append(head);
+        let category = infos[cateName];
+        for (let key in category) {
+            let button = document.createElement("button");
+            let name = document.createElement("div");
+            name.className = "name";
+            name.innerText = key;
+            button.append(name);
+            let tooltip = document.createElement("div");
+            tooltip.className = "tooltip";
+            tooltip.innerText = category[key].tooltip;
+            button.append(tooltip);
+            scroll.appendChild(button);
+            button.onclick = async (ev) => {
+                let shader = new Shader();
+                await shader.Setup(cateName, key);
+            };
+        }
     }
 }

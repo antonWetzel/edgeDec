@@ -3,7 +3,7 @@ import * as Request from '../helper/request.js';
 import * as Shader from './shader.js';
 let infos;
 export async function Setup() {
-    infos = JSON.parse(await Request.getFile("../templates/infos.json"));
+    infos = JSON.parse(await Request.getFile("../templates/info.json"));
 }
 export async function New() {
     let area = document.createElement("div");
@@ -33,7 +33,7 @@ export async function New() {
             for (let i = 0; i < template.length; i++) {
                 let info = template[i];
                 let box = new Shader.Shader();
-                box.Setup(info.name);
+                box.Setup(info.category, info.name);
                 for (let i = 0; i < info.inputs.length; i++) {
                     let line = new Box.Line(boxes[info.inputs[i]]);
                     line.end = box;
@@ -47,11 +47,12 @@ export async function New() {
                 let x = box.x;
                 for (let i = 0; i < box.inputs.length; i++) {
                     let start = box.inputs[i].start;
-                    x = Math.max(x, start.x + 150);
+                    x = Math.max(x, start.x + 250);
                 }
-                box.moveBy(x, 0);
+                await box.moveTo(x, 200);
             }
             let counts = {};
+            let proms = [];
             for (let i = 0; i < boxes.length; i++) {
                 let box = boxes[i];
                 let x = box.x;
@@ -63,13 +64,10 @@ export async function New() {
                 else {
                     counts[x] = y + 1;
                 }
-                box.moveBy(0, 0 + y * 100);
+                proms.push(box.moveBy(0, y * 100));
             }
-            //disgusting solution for alligment
-            for (let i = 0; i < boxes.length; i++) {
-                setTimeout(() => {
-                    boxes[i].moveBy(3, 3);
-                }, 10);
+            for (let i = 0; i < proms.length; i++) {
+                await proms[i];
             }
         };
     }

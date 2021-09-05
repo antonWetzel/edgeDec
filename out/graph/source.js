@@ -4,7 +4,7 @@ import * as Texture from '../gpu/texture.js';
 import * as Graph from './graph.js';
 export class Source extends Box.Box {
     constructor() {
-        super(100, 100, 0);
+        super(300, 300, 0);
         this.zoom = 1;
         this.width = 1;
         this.height = 1;
@@ -18,7 +18,7 @@ export class Source extends Box.Box {
         this.updated = true;
         this.width = img.width;
         this.height = img.height;
-        this.body.onwheel = (ev) => {
+        this.body.onwheel = async (ev) => {
             this.zoom *= 1 + ev.deltaY / 1000;
             if (this.result.width * this.zoom < 30) {
                 this.zoom = 30 / this.result.width;
@@ -28,9 +28,9 @@ export class Source extends Box.Box {
             }
             img.width = this.width * this.zoom;
             img.height = this.height * this.zoom;
-            this.moveBy(0, 0);
+            await this.moveBy(0, 0);
         };
-        this.moveBy(0, 0);
+        await this.moveBy(0, 0);
         Graph.AddBox(this);
     }
     async SetupVIdeo(src) {
@@ -46,7 +46,7 @@ export class Source extends Box.Box {
         vid.autoplay = true;
         vid.loop = true;
         let handle;
-        vid.onplay = () => {
+        vid.onplay = async () => {
             this.width = vid.videoWidth;
             this.height = vid.videoHeight;
             let cb = async () => {
@@ -58,13 +58,13 @@ export class Source extends Box.Box {
                 handle = requestAnimationFrame(cb);
             };
             cb();
-            this.moveBy(0, 0);
+            await this.moveBy(0, 0);
         };
         vid.onpause = () => {
             cancelAnimationFrame(handle);
             vid.play();
         };
-        this.body.onwheel = (ev) => {
+        this.body.onwheel = async (ev) => {
             this.zoom *= 1 + ev.deltaY / 1000;
             if (this.result.width * this.zoom < 30) {
                 this.zoom = 30 / this.result.width;
@@ -74,7 +74,7 @@ export class Source extends Box.Box {
             }
             vid.width = this.width * this.zoom;
             vid.height = this.height * this.zoom;
-            this.moveBy(0, 0);
+            await this.moveBy(0, 0);
         };
         this.updated = true;
         Graph.AddBox(this);

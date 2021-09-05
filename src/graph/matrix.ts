@@ -16,7 +16,7 @@ export class Matrix extends Box.Box {
 	table: HTMLTableElement
 
 	constructor() {
-		super(250, 250, 1)
+		super(450, 300, 1)
 		this.data = [
 			[-1, 0, 1],
 			[-2, 0, 2],
@@ -88,8 +88,8 @@ export class Matrix extends Box.Box {
 
 	async Setup() {
 		this.result = await Texture.Blanc(1, 1)
-		this.moveBy(0, 0)
 		Graph.AddBox(this)
+		await this.moveBy(0, 0)
 	}
 
 	updateTable() {
@@ -126,7 +126,7 @@ export class Matrix extends Box.Box {
 					bot.append(input)
 					bot.append(number)
 					scroll.append(div)
-					input.onchange = (ev) => {
+					input.oninput = (ev) => {
 						number.innerText = input.value
 						ev.stopPropagation()
 					}

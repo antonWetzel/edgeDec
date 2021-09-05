@@ -17,27 +17,38 @@ export async function Setup(container) {
     thrash.style.display = "none";
     area.append(thrash);
     area.draggable = true;
+    let started = false;
     area.ondragstart = (ev) => {
         let img = document.createElement("img");
         if (ev.dataTransfer != null) {
             ev.dataTransfer.setDragImage(img, 0, 0);
         }
-        start = { x: ev.clientX, y: ev.clientY };
+        start = { x: ev.pageX - area.offsetLeft, y: ev.pageY - area.offsetTop };
+        started = true;
     };
-    area.ondrag = (ev) => {
+    area.ondrag = async (ev) => {
         ev.stopPropagation();
         if (!ev.ctrlKey) {
             if (ev.clientX == 0 && ev.clientY == 0) {
                 return;
             }
-            if (ev.pageX != ev.screenX) {
+            if (started) { //first frame uses the div position, skip it
+                started = false;
                 return;
             }
+            let x = ev.pageX - area.offsetLeft;
+            let y = ev.pageY - area.offsetTop;
+            let dx = x - start.x;
+            let dy = y - start.y;
+            start = { x: x, y: y };
+            let proms = [];
             for (let i = 0; i < all.length; i++) {
                 let box = all[i];
-                box.moveBy(ev.clientX - start.x, ev.clientY - start.y);
+                proms.push(box.moveBy(dx, dy));
             }
-            start = { x: ev.clientX, y: ev.clientY };
+            for (let i = 0; i < proms.length; i++) {
+                await proms[i];
+            }
         }
     };
     await Shader.Setup();

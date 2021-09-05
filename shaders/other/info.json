@@ -1,0 +1,7 @@
+{
+	"copy": {
+		"inputs": 1,
+		"tooltip": "Copy the values without any change",
+		"parameter": []
+	}
+}

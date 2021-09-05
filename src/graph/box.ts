@@ -25,6 +25,7 @@ export abstract class Box {
 		this.y = y
 		this.body.draggable = true
 
+		let started = false
 		this.body.ondragstart = (ev) => {
 			ev.stopPropagation()
 			ev.stopImmediatePropagation()
@@ -38,16 +39,18 @@ export abstract class Box {
 			if (ev.dataTransfer != null) {
 				ev.dataTransfer.setDragImage(div, 0, 0)
 			}
+			started = true
 		}
 
-		this.body.ondrag = (ev) => {
+		this.body.ondrag = async (ev) => {
 			ev.stopPropagation()
 			if (ev.x != 0 && ev.y != 0) {
 				if (dragged == null) {
-					if (ev.pageX != ev.screenX) {
+					if (started) { //first frame uses the div position, skip it
+						started = false
 						return
 					}
-					this.moveTo(ev.x, ev.y)
+					await this.moveTo(ev.pageX - Graph.area.offsetLeft, ev.pageY - Graph.area.offsetTop)
 					for (let i = 0; i < this.outputs.length; i++) {
 						this.outputs[i].setStart(this.x, this.y)
 					}
@@ -140,11 +143,11 @@ export abstract class Box {
 		Graph.RemoveBox(this)
 	}
 
-	moveBy(x: number, y: number): void {
-		this.moveTo(this.x + x, this.y + y)
+	async moveBy(x: number, y: number): Promise<void> {
+		await this.moveTo(this.x + x, this.y + y)
 	}
 
-	moveTo(x: number, y: number): void {
+	async moveTo(x: number, y: number): Promise<void> {
 		this.x = x
 		this.y = y
 		let xOff = (x - Graph.area.offsetLeft) - this.body.offsetWidth / 2
@@ -155,6 +158,7 @@ export abstract class Box {
 		for (let i = 0; i < this.inputs.length; i++) {
 			this.inputs[i].setEnd(x, y)
 		}
+		await new Promise((resolve, _) => { setTimeout(resolve) })
 		this.body.style.marginLeft = xOff.toString() + "px"
 		this.body.style.marginTop = yOFF.toString() + "px"
 	}

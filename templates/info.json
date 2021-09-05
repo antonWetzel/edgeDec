@@ -1,0 +1,8 @@
+{
+	"sobel": {
+		"tooltip": "Edge detection with the sobel operator"
+	},
+	"canny": {
+		"tooltip": "Edge detection with line thinning"
+	}
+}

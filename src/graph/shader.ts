@@ -8,17 +8,25 @@ type Paramter = {
 	name: string,
 	min: number,
 	step: number,
-	max: number
+	max: number,
+	default: number,
 }
 type ShaderInfo = {
 	inputs: number,
 	tooltip: string,
 	parameter: Paramter[]
 }
-let infos: { [key: string]: ShaderInfo }
+type CategoryInfo = { [key: string]: ShaderInfo }
+
+let infos: { [key: string]: CategoryInfo }
 
 export async function Setup() {
-	infos = JSON.parse(await Request.getFile("../shaders/infos.json"))
+	let locations: string[] = JSON.parse(await Request.getFile("../shaders/info.json"))
+	infos = {}
+	for (let i = 0; i < locations.length; i++) {
+		let category = JSON.parse(await Request.getFile("../shaders/" + locations[i] + "/info.json"))
+		infos[locations[i]] = category
+	}
 }
 
 export class Shader extends Box.Box {
@@ -27,14 +35,14 @@ export class Shader extends Box.Box {
 	buffer: GPUBuffer | null
 
 	constructor() {
-		super(250, 250, 0)
+		super(450, 300, 0)
 		this.compute = undefined as any
 		this.buffer = null
 	}
 
-	async Setup(name: string) {
-		let info = infos[name]
-		this.compute = await GPU.NewCompute("../shaders/" + name + ".wgsl")
+	async Setup(category: string, name: string) {
+		let info = infos[category][name]
+		this.compute = await GPU.NewCompute("../shaders/" + category + "/" + name + ".wgsl")
 		let body = document.createElement("div")
 		body.className = "shader"
 		body.innerHTML = name
@@ -47,7 +55,7 @@ export class Shader extends Box.Box {
 		if (info.parameter.length > 0) {
 			parameter = []
 			for (let i = 0; i < info.parameter.length; i++) {
-				parameter.push(info.parameter[i].min)
+				parameter.push(info.parameter[i].default)
 			}
 			this.buffer = GPU.CreateBuffer(new Float32Array(parameter), GPUBufferUsage.UNIFORM)
 		}
@@ -85,7 +93,7 @@ export class Shader extends Box.Box {
 					div.append(bot)
 					bot.append(input)
 					bot.append(number)
-					input.onchange = () => {
+					input.oninput = () => {
 						parameter[i] = parseFloat(input.value)
 						number.innerText = input.value
 					}
@@ -103,8 +111,8 @@ export class Shader extends Box.Box {
 				}
 			}
 		}
-		this.moveBy(0, 0)
 		Graph.AddBox(this)
+		await this.moveBy(0, 0)
 	}
 
 	async update() {
@@ -131,29 +139,38 @@ export async function New(): Promise<void> {
 	area.className = "popArea"
 	document.body.appendChild(area)
 
-	let scroll = document.createElement("scroll")
-	scroll.className = "scroll"
-	area.append(scroll)
-
 	area.onclick = async () => {
 		area.remove()
 	}
 
-	for (let key in infos) {
-		let button = document.createElement("button")
-		let name = document.createElement("div")
-		name.className = "name"
-		name.innerText = key
-		button.append(name)
-		let tooltip = document.createElement("div")
-		tooltip.className = "tooltip"
-		tooltip.innerText = infos[key].tooltip
-		button.append(tooltip)
-		scroll.appendChild(button)
+	for (let cateName in infos) {
 
-		button.onclick = async (ev) => {
-			let shader = new Shader()
-			await shader.Setup(key)
+		let scroll = document.createElement("div")
+		scroll.className = "scroll"
+		area.append(scroll)
+
+		let head = document.createElement("div")
+		head.className = "head"
+		head.innerText = cateName
+		scroll.append(head)
+
+		let category = infos[cateName]
+		for (let key in category) {
+			let button = document.createElement("button")
+			let name = document.createElement("div")
+			name.className = "name"
+			name.innerText = key
+			button.append(name)
+			let tooltip = document.createElement("div")
+			tooltip.className = "tooltip"
+			tooltip.innerText = category[key].tooltip
+			button.append(tooltip)
+			scroll.appendChild(button)
+
+			button.onclick = async (ev) => {
+				let shader = new Shader()
+				await shader.Setup(cateName, key)
+			}
 		}
 	}
 }

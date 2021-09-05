@@ -1,0 +1,25 @@
+{
+	"mix": {
+		"inputs": 2,
+		"tooltip": "Mix of the 2 inputs for every pixel",
+		"parameter": [
+			{
+				"name": "preference",
+				"min": 0.0,
+				"step": 0.01,
+				"max": 1.0,
+				"default": 0.5
+			}
+		]
+	},
+	"max": {
+		"inputs": 2,
+		"tooltip": "Maximum of 2 inputs",
+		"parameter": []
+	},
+	"euclidean": {
+		"inputs": 2,
+		"tooltip": "Euclidean norm of 2 inputs",
+		"parameter": []
+	}
+}

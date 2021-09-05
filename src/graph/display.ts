@@ -9,7 +9,7 @@ export class Display extends Box.Box {
 	zoom: number
 
 	constructor() {
-		super(400, 400, 1)
+		super(600, 300, 1)
 		this.canvas = undefined as any
 		this.zoom = 1
 	}
@@ -18,7 +18,7 @@ export class Display extends Box.Box {
 		this.body.append(this.canvas)
 		this.result = await Texture.Blanc(1, 1)
 
-		this.body.onwheel = (ev) => {
+		this.body.onwheel = async (ev) => {
 			this.zoom *= 1 + ev.deltaY / 1000
 			if (this.result.width != 1 || this.result.height != 1) {
 				if (this.result.width * this.zoom < 30) {
@@ -27,13 +27,13 @@ export class Display extends Box.Box {
 					this.zoom = 2000 / this.result.width
 				}
 				this.canvas.resize(this.result.width * this.zoom, this.result.height * this.zoom)
-				this.moveBy(0, 0)
+				await this.moveBy(0, 0)
 				GPU.Start()
 				this.update()
 				GPU.End()
 			}
 		}
-		this.moveBy(0, 0)
+		await this.moveBy(0, 0)
 		Graph.AddBox(this)
 	}
 	async update() {
@@ -44,7 +44,7 @@ export class Display extends Box.Box {
 			}
 			if (input.result.width != this.result.width || input.result.height != this.result.height) {
 				this.canvas.resize(input.result.width * this.zoom, input.result.height * this.zoom)
-				this.moveBy(0, 0)
+				await this.moveBy(0, 0)
 			}
 			this.result = input.result
 			this.canvas.draw(this.result)

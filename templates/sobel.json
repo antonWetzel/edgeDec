@@ -1,26 +1,26 @@
 [
 	{
-		"category": "blur",
-		"name": "gaus",
+		"category": "display",
+		"name": "gray",
 		"inputs": []
 	},
 	{
-		"category": "display",
-		"name": "gray",
+		"category": "edge",
+		"name": "sobelX",
 		"inputs": [
 			0
 		]
 	},
 	{
 		"category": "edge",
-		"name": "sobelX",
+		"name": "sobelY",
 		"inputs": [
-			1
+			0
 		]
 	},
 	{
 		"category": "edge",
-		"name": "sobelY",
+		"name": "edgeValue",
 		"inputs": [
 			1
 		]
@@ -33,48 +33,25 @@
 		]
 	},
 	{
-		"category": "edge",
-		"name": "edgeValue",
-		"inputs": [
-			3
-		]
-	},
-	{
 		"category": "combine",
 		"name": "euclidean",
 		"inputs": [
-			4,
-			5
-		]
-	},
-	{
-		"category": "edge",
-		"name": "grad",
-		"inputs": [
-			2,
-			3
-		]
-	},
-	{
-		"category": "edge",
-		"name": "suppression",
-		"inputs": [
-			6,
-			7
+			3,
+			4
 		]
 	},
 	{
 		"category": "display",
-		"name": "threshhold",
+		"name": "scale",
 		"inputs": [
-			8
+			5
 		]
 	},
 	{
 		"category": "display",
 		"name": "inverse",
 		"inputs": [
-			9
+			6
 		]
 	}
 ]
