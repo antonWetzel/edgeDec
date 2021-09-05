@@ -21,6 +21,11 @@ document.body.onload = async () => {
     setupButton("matrix", () => { new Matrix.Matrix().Setup(); });
     setupButton("webcam", () => { Source.Webcam(); });
     setupButton("template", Template.New);
-    await GPU.Setup();
+    try {
+        await GPU.Setup();
+    }
+    catch (error) {
+        alert("Problem with WebGPU");
+    }
     Graph.Setup(area);
 };
