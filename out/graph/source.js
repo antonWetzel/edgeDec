@@ -92,19 +92,23 @@ export async function File() {
         }
         let file = files[0];
         let sep = file.name.split(".");
-        switch (sep[sep.length - 1]) {
+        let format = sep[sep.length - 1];
+        switch (format) {
             case "png":
             case "jpg":
+            case "jpeg":
+            case "jfif":
                 let img = new Source();
                 await img.SetupImage(file);
                 break;
             case "mp4":
             case "webm":
+            case "m4v":
                 let vid = new Source();
                 await vid.SetupVIdeo(file);
                 break;
             default:
-                alert("file format not allowed");
+                alert("format '" + format + "' not supported");
                 break;
         }
     };
