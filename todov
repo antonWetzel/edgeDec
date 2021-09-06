@@ -6,7 +6,14 @@
 		},
 		{
 			"name": "Other",
-			"notes": []
+			"notes": [
+				{
+					"name": "Token",
+					"points": [
+						"14.9 Chrome 94"
+					]
+				}
+			]
 		},
 		{
 			"name": "Sometime",
