@@ -21,7 +21,8 @@ export class Matrix extends Box.Box {
         this.body.append(top);
         this.table = document.createElement("table");
         this.body.append(this.table);
-        let decrease = document.createElement("button");
+        let decrease = document.createElement("div");
+        decrease.className = "button";
         decrease.onclick = async () => {
             if (this.data.length > 1) {
                 this.data.pop();
@@ -38,7 +39,8 @@ export class Matrix extends Box.Box {
         };
         decrease.innerText = "-";
         top.append(decrease);
-        let shift = document.createElement("button");
+        let shift = document.createElement("div");
+        shift.className = "button";
         shift.onclick = async () => {
             this.negative = !this.negative;
             this.buffer = this.updateBuffer();
@@ -52,7 +54,8 @@ export class Matrix extends Box.Box {
             "min: sum of negative values\n" +
             "max: sum of positive values");
         top.append(shift);
-        let increase = document.createElement("button");
+        let increase = document.createElement("div");
+        increase.className = "button";
         increase.onclick = async () => {
             let row = [];
             for (let i = 0; i < this.data.length; i++) {

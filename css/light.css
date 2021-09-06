@@ -1,0 +1,9 @@
+:root {
+	--border-color: black;
+	--fill-color: white;
+	--background-color: gray;
+	--dim-color: rgb(0, 0, 0, 0.75);
+	--text-color: black;
+	--dimtext-color: dimgray;
+	--trash-color: darkred;
+}

@@ -5,134 +5,79 @@ html, body {
 	display: flex;
 	flex-direction: column;
 	font-family: Arial, Helvetica, sans-serif;
+	color: var(--text-color);
+	background-color: var(--fill-color);
 }
 
 ::-webkit-scrollbar {
 	display: none;
 }
 
-.container {
-	width: 100%;
-	display: flex;
+#error {
 	flex-grow: 1;
-	flex-wrap: wrap;
+	padding: 20% 0% 0% 0%;
+	font-size: 500%;
+	text-align: center;
+	background-color: darkred;
 }
 
-button {
-	margin: 5px;
+.button{
+	text-align: center;
+	margin: 10px;
 	flex-grow: 1;
 	padding: 4px;
-	border:3px solid black;
+	border:3px solid var(--border-color);
 	font-size:x-large;
-	border-color: black;
-	background-color: white;
+	background-color: var(--fill-color);
 }
+
 
 #area {
-	margin: 5px;
-	flex-grow: 100;
-	border:3px solid black;
+	margin: 10px;
+	margin-bottom: 0px;
+	flex-grow: 1;
+	display: grid;
+	align-items: stretch;
+	justify-items: stretch;
+	grid-template-columns: 1fr;
+	grid-template-rows: 1fr;
+	background-color: var(--background-color);
+	border: 3px solid var(--border-color);
 	overflow: hidden;
-	position: relative;
-	background-color: gray;
 }
 
+#area>#svg {
+	position: relative;
+	grid-column-start: 1;
+	grid-row-start: 1;
+}
+#area>#svg>line{
+	stroke: var(--border-color);
+	stroke-width: 5px;
+	stroke-dasharray: 20px 10px;
+	animation:  linear 1s slide  infinite reverse 0s;
+}
 
-.box {
+#area>#field {
+	position: relative;
+	grid-column-start: 1;
+	grid-row-start: 1;
+}
+#field>.box {
+	background-color: var(--fill-color);
 	min-width: 10px;
 	min-height: 10px;
 	position: absolute;
-	border: 5px solid black;
-	background-color: black;
+	border: 5px solid var(--border-color);
 }
 
-.box>.top{
-	min-width: 150px;
-	background-color: white;
-	display: flex;
-	border-bottom: 3px solid black;
-}
-.box>table {
-	background-color: white;
-	font-size: x-large;
-	padding: 10px 20px; 
-	width: 100%;
-}
-td {
-	text-align: center;
-	border-collapse: collapse;
-	padding: 1.5px 6px; 
-}
-
-img, video {
-	image-rendering: pixelated;
-	vertical-align: middle;
-}
-canvas {
-	vertical-align: middle;
-}
-
-svg {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-}
-
-.popArea {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	display: flex;
-	overflow: scroll;
-
-	background-color: rgb(0, 0, 0, 0.75);
-}
-.scroll>* {
-	flex-grow: 0;
-	width: 100%;
-	margin: 5px 0px;
-}
-.scroll {
-	overflow: scroll;
-	padding: 3%;
-	min-width: 25%;
-	flex-grow: 1;
-	display: flex;
-	flex-direction:column;
-	align-items: center;
-}
-
-.head {
-	background-color: white;
-	font-size: 300%;
-	padding: 5px 0px;
-	text-align: center;
-}
-
-.thrash {
-	position:absolute;
-	width: 200px;
-	height: 200px;
-	margin-left: -100px;
-	margin-top: -100px;
-	border-radius: 50%;
-	background-color: darkred;
-	border: 3px solid black;
-}
-
-.name {
-	font-size: xx-large;
-}
-.tooltip {
-	font-size: x-large;
-	color: dimgray;
-}
-.shader {
-	background-color: white;
+.box>.shader {
+	background-color: var(--fill-color);
 	font-size: x-large;
 	text-align: center;
 	padding: 20px 40px; 
 }
+
 .shader>.bot{
 	display: flex;
 }
@@ -143,12 +88,96 @@ svg {
 	flex-grow: 1;
 	text-align: right;
 }
-svg>line{
-	stroke: black;
-	stroke-width: 5px;
-	stroke-dasharray: 20px 10px;
-	animation:  linear 1s slide  infinite reverse 0s;
+
+.box>.top{
+	min-width: 150px;
+	background-color: var(--fill-color);
+	display: flex;
+	border-bottom: 3px solid var(--border-color);
 }
+
+.box>table {
+	background-color: var(--fill-color);
+	font-size: x-large;
+	padding: 10px 20px; 
+	width: 100%;
+}
+table>td {
+	text-align: center;
+	border-collapse: collapse;
+	padding: 1.5px 6px; 
+}
+
+
+.box>img, .box>video {
+	image-rendering: pixelated;
+	vertical-align: middle;
+}
+.box>canvas {
+	vertical-align: middle;
+	background-color: var(--background-color);
+}
+
+#area>#trash {
+	grid-column-start: 1;
+	grid-row-start: 1;
+	position: relative;
+	width: 200px;
+	height: 200px;
+	margin-left: -100px;
+	margin-top: -100px;
+	border-radius: 50%;
+	background-color: var(--trash-color);
+	border: 3px solid var(--border-color);
+	display: none;
+}
+
+.container {
+	width: 100%;
+	display: flex;
+	flex-grow: 0;
+	flex-wrap: wrap;
+}
+
+.popArea {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	overflow: scroll;
+	background-color: var(--dim-color);
+}
+
+.popArea>.scroll {
+	overflow: scroll;
+	padding: 3%;
+	min-width: 25%;
+	flex-grow: 1;
+	display: flex;
+	flex-direction:column;
+	align-items: center;
+}
+.scroll>* {
+	background-color: var(--fill-color);
+	flex-grow: 0;
+	width: 100%;
+	margin: 5px 0px;
+}
+
+.scroll>.head {
+	font-size: 300%;
+	padding: 5px 0px;
+	text-align: center;
+}
+
+.scroll .name {
+	font-size: xx-large;
+}
+.scroll .tooltip {
+	font-size: x-large;
+	color: var(--dimtext-color);
+}
+
 
 @keyframes slide {
 	to {

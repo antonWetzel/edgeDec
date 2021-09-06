@@ -20,7 +20,7 @@ export class Box {
                 dragged = new Line(this);
             }
             else {
-                Graph.thrash.style.display = "unset";
+                Graph.trash.style.display = "unset";
             }
             let div = document.createElement("div");
             if (ev.dataTransfer != null) {
@@ -36,7 +36,7 @@ export class Box {
                         started = false;
                         return;
                     }
-                    await this.moveTo(ev.pageX - Graph.area.offsetLeft, ev.pageY - Graph.area.offsetTop);
+                    await this.moveTo(ev.pageX - Graph.field.offsetLeft, ev.pageY - Graph.field.offsetTop);
                     for (let i = 0; i < this.outputs.length; i++) {
                         this.outputs[i].setStart(this.x, this.y);
                     }
@@ -71,7 +71,7 @@ export class Box {
                 }
             }
         };
-        this.body.ondragend = async (ev) => {
+        this.body.ondragend = (ev) => {
             ev.stopPropagation();
             ev.preventDefault();
             if (dragged != null) {
@@ -102,9 +102,11 @@ export class Box {
                         end.inputs[0].delete();
                     }
                     end.recursiveReset();
-                    GPU.Start();
-                    await end.recursiveUpdate();
-                    GPU.End();
+                    setTimeout(async () => {
+                        GPU.Start();
+                        await end.recursiveUpdate();
+                        GPU.End();
+                    });
                 }
                 else {
                     dragged.delete();
@@ -112,8 +114,8 @@ export class Box {
                 dragged = null;
             }
             else {
-                Graph.thrash.style.display = "none";
-                if (this.x * this.x + this.y * this.y < 100 * 100) {
+                Graph.trash.style.display = "none";
+                if (Graph.inTrash) {
                     this.delete();
                 }
             }
@@ -134,8 +136,8 @@ export class Box {
     async moveTo(x, y) {
         this.x = x;
         this.y = y;
-        let xOff = (x - Graph.area.offsetLeft) - this.body.offsetWidth / 2;
-        let yOFF = (y - Graph.area.offsetTop) - this.body.offsetHeight / 2;
+        let xOff = (x - Graph.field.offsetLeft) - this.body.offsetWidth / 2;
+        let yOFF = (y - Graph.field.offsetTop) - this.body.offsetHeight / 2;
         for (let i = 0; i < this.outputs.length; i++) {
             this.outputs[i].setStart(x, y);
         }

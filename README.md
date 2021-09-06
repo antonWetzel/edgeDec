@@ -30,3 +30,7 @@ Displays draw one input to the screen, they can be used as an input again. The d
 ## Templates
 
 Templates add multiple shaders and connect them. They have no differences to manual added shaders.
+
+## Keys
+
+<kbd>C</kbd> to switch the display style

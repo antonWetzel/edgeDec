@@ -156,7 +156,8 @@ export async function New(): Promise<void> {
 
 		let category = infos[cateName]
 		for (let key in category) {
-			let button = document.createElement("button")
+			let button = document.createElement("div")
+			button.className = "button"
 			let name = document.createElement("div")
 			name.className = "name"
 			name.innerText = key

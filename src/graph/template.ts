@@ -34,7 +34,8 @@ export async function New(): Promise<void> {
 
 	for (let key in infos) {
 		let info = infos[key]
-		let button = document.createElement("button")
+		let button = document.createElement("div")
+		button.className = "button"
 		let name = document.createElement("div")
 		name.className = "name"
 		name.innerText = key

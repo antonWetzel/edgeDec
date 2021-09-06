@@ -3,40 +3,38 @@ import * as Shader from './shader.js'
 import * as Matrix from './matrix.js'
 import * as Template from './template.js'
 
-export let area: HTMLElement
-export let thrash: HTMLElement
+export let field: HTMLElement
+export let trash: HTMLElement
+export let inTrash: boolean
 export let svg: SVGSVGElement
 
 let start: { x: number, y: number }
 let all: Box.Box[]
 
-export async function Setup(container: HTMLElement): Promise<void> {
-	area = container
-	svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
-	area.append(svg)
+export async function Setup(area: HTMLElement): Promise<void> {
+
+	svg = document.getElementById("svg") as any
+	field = document.getElementById("field") as any
+	trash = document.getElementById("trash") as any
 
 	all = []
 	start = { x: 0, y: 0 }
+	inTrash = false
 
-	thrash = document.createElement("div")
-	thrash.className = "thrash"
-	thrash.style.display = "none"
-	area.append(thrash)
-
-	area.draggable = true
+	field.draggable = true
 
 	let started = false
 
-	area.ondragstart = (ev) => {
+	field.ondragstart = (ev) => {
 		let img = document.createElement("img");
 		if (ev.dataTransfer != null) {
 			ev.dataTransfer.setDragImage(img, 0, 0);
 		}
-		start = { x: ev.pageX - area.offsetLeft, y: ev.pageY - area.offsetTop }
+		start = { x: ev.pageX - field.offsetLeft, y: ev.pageY - field.offsetTop }
 		started = true
 	}
 
-	area.ondrag = async (ev) => {
+	field.ondrag = async (ev) => {
 		ev.stopPropagation()
 		if (!ev.ctrlKey) {
 			if (ev.clientX == 0 && ev.clientY == 0) {
@@ -46,8 +44,8 @@ export async function Setup(container: HTMLElement): Promise<void> {
 				started = false
 				return
 			}
-			let x = ev.pageX - area.offsetLeft
-			let y = ev.pageY - area.offsetTop
+			let x = ev.pageX - field.offsetLeft
+			let y = ev.pageY - field.offsetTop
 			let dx = x - start.x
 			let dy = y - start.y
 			start = { x: x, y: y }
@@ -61,6 +59,13 @@ export async function Setup(container: HTMLElement): Promise<void> {
 			}
 		}
 	}
+	trash.ondragenter = (ev) => {
+		inTrash = true
+	}
+	trash.ondragleave = (ev) => {
+		setTimeout(() => { inTrash = false }, 1)
+	}
+
 	await Shader.Setup()
 	await Matrix.Setup()
 	await Template.Setup()
@@ -68,11 +73,11 @@ export async function Setup(container: HTMLElement): Promise<void> {
 
 export function AddBox(box: Box.Box) {
 	all.push(box)
-	area.append(box.body)
+	field.append(box.body)
 }
 
 export function RemoveBox(box: Box.Box) {
 	let idx = all.indexOf(box)
 	all.splice(idx, 1)
-	area.removeChild(box.body)
+	field.removeChild(box.body)
 }

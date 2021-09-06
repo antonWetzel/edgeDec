@@ -1,32 +1,30 @@
 import * as Shader from './shader.js';
 import * as Matrix from './matrix.js';
 import * as Template from './template.js';
-export let area;
-export let thrash;
+export let field;
+export let trash;
+export let inTrash;
 export let svg;
 let start;
 let all;
-export async function Setup(container) {
-    area = container;
-    svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    area.append(svg);
+export async function Setup(area) {
+    svg = document.getElementById("svg");
+    field = document.getElementById("field");
+    trash = document.getElementById("trash");
     all = [];
     start = { x: 0, y: 0 };
-    thrash = document.createElement("div");
-    thrash.className = "thrash";
-    thrash.style.display = "none";
-    area.append(thrash);
-    area.draggable = true;
+    inTrash = false;
+    field.draggable = true;
     let started = false;
-    area.ondragstart = (ev) => {
+    field.ondragstart = (ev) => {
         let img = document.createElement("img");
         if (ev.dataTransfer != null) {
             ev.dataTransfer.setDragImage(img, 0, 0);
         }
-        start = { x: ev.pageX - area.offsetLeft, y: ev.pageY - area.offsetTop };
+        start = { x: ev.pageX - field.offsetLeft, y: ev.pageY - field.offsetTop };
         started = true;
     };
-    area.ondrag = async (ev) => {
+    field.ondrag = async (ev) => {
         ev.stopPropagation();
         if (!ev.ctrlKey) {
             if (ev.clientX == 0 && ev.clientY == 0) {
@@ -36,8 +34,8 @@ export async function Setup(container) {
                 started = false;
                 return;
             }
-            let x = ev.pageX - area.offsetLeft;
-            let y = ev.pageY - area.offsetTop;
+            let x = ev.pageX - field.offsetLeft;
+            let y = ev.pageY - field.offsetTop;
             let dx = x - start.x;
             let dy = y - start.y;
             start = { x: x, y: y };
@@ -51,16 +49,22 @@ export async function Setup(container) {
             }
         }
     };
+    trash.ondragenter = (ev) => {
+        inTrash = true;
+    };
+    trash.ondragleave = (ev) => {
+        setTimeout(() => { inTrash = false; }, 1);
+    };
     await Shader.Setup();
     await Matrix.Setup();
     await Template.Setup();
 }
 export function AddBox(box) {
     all.push(box);
-    area.append(box.body);
+    field.append(box.body);
 }
 export function RemoveBox(box) {
     let idx = all.indexOf(box);
     all.splice(idx, 1);
-    area.removeChild(box.body);
+    field.removeChild(box.body);
 }

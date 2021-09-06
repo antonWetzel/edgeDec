@@ -29,8 +29,33 @@ document.body.onload = async () => {
 
 	try {
 		await GPU.Setup()
-	} catch (error) {
-		alert("Problem with WebGPU")
+	} catch {
+		document.body.innerHTML = ""
+		let error = document.createElement("div")
+		error.id = "error"
+		error.innerText = "Problem with WebGPU"
+		document.body.append(error)
+		return
 	}
 	Graph.Setup(area)
+
+	let mode = document.cookie;
+	if (mode != "light" && mode != "dark") {
+		mode = "light"
+	}
+	document.body.onkeydown = (ev) => {
+		if (ev.code == "KeyC") {
+			mode = (mode == "light") ? "dark" : "light"
+			setStylesheet(mode)
+		}
+	}
+	setStylesheet(mode)
+}
+
+function setStylesheet(mode: string) {
+	let sheet = document.getElementById("color") as HTMLLinkElement
+	sheet.href = "../css/" + mode + ".css"
+	let date = new Date()
+	date.setTime(date.getTime() + 1000 * 60 * 60 * 24 * 7) //valid for one week
+	document.cookie = mode + "; expires=" + date.toUTCString()
 }

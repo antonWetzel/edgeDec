@@ -32,7 +32,7 @@ export abstract class Box {
 			if (ev.ctrlKey) {
 				dragged = new Line(this)
 			} else {
-				Graph.thrash.style.display = "unset"
+				Graph.trash.style.display = "unset"
 			}
 
 			let div = document.createElement("div")
@@ -50,7 +50,7 @@ export abstract class Box {
 						started = false
 						return
 					}
-					await this.moveTo(ev.pageX - Graph.area.offsetLeft, ev.pageY - Graph.area.offsetTop)
+					await this.moveTo(ev.pageX - Graph.field.offsetLeft, ev.pageY - Graph.field.offsetTop)
 					for (let i = 0; i < this.outputs.length; i++) {
 						this.outputs[i].setStart(this.x, this.y)
 					}
@@ -86,7 +86,7 @@ export abstract class Box {
 			}
 		}
 
-		this.body.ondragend = async (ev) => {
+		this.body.ondragend = (ev) => {
 			ev.stopPropagation()
 			ev.preventDefault()
 			if (dragged != null) {
@@ -117,16 +117,18 @@ export abstract class Box {
 						end.inputs[0].delete()
 					}
 					end.recursiveReset()
-					GPU.Start()
-					await end.recursiveUpdate()
-					GPU.End()
+					setTimeout(async () => {
+						GPU.Start()
+						await end.recursiveUpdate()
+						GPU.End()
+					})
 				} else {
 					dragged.delete()
 				}
 				dragged = null
 			} else {
-				Graph.thrash.style.display = "none"
-				if (this.x * this.x + this.y * this.y < 100 * 100) {
+				Graph.trash.style.display = "none"
+				if (Graph.inTrash) {
 					this.delete()
 				}
 			}
@@ -150,8 +152,8 @@ export abstract class Box {
 	async moveTo(x: number, y: number): Promise<void> {
 		this.x = x
 		this.y = y
-		let xOff = (x - Graph.area.offsetLeft) - this.body.offsetWidth / 2
-		let yOFF = (y - Graph.area.offsetTop) - this.body.offsetHeight / 2
+		let xOff = (x - Graph.field.offsetLeft) - this.body.offsetWidth / 2
+		let yOFF = (y - Graph.field.offsetTop) - this.body.offsetHeight / 2
 		for (let i = 0; i < this.outputs.length; i++) {
 			this.outputs[i].setStart(x, y)
 		}

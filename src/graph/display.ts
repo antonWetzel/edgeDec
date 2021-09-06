@@ -13,6 +13,7 @@ export class Display extends Box.Box {
 		this.canvas = undefined as any
 		this.zoom = 1
 	}
+
 	async Setup() {
 		this.canvas = await GPU.Create()
 		this.body.append(this.canvas)

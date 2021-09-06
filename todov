@@ -4,20 +4,6 @@
 			"name": "Todo",
 			"notes": [
 				{
-					"name": "QOL",
-					"points": [
-						"sort shaders infos"
-					]
-				},
-				{
-					"name": "Readme",
-					"points": []
-				},
-				{
-					"name": "Helptext",
-					"points": []
-				},
-				{
 					"name": "bugged drag on zoom",
 					"points": []
 				}
@@ -25,29 +11,15 @@
 		},
 		{
 			"name": "Other",
+			"notes": []
+		},
+		{
+			"name": "Sometime",
 			"notes": [
-				{
-					"name": "QOL",
-					"points": [
-						"categories for shader",
-						"Light/Dark (Cookie)"
-					]
-				},
 				{
 					"name": "Speed",
 					"points": [
 						"better conversion from video"
-					]
-				}
-			]
-		},
-		{
-			"name": "Not important",
-			"notes": [
-				{
-					"name": "Thrash",
-					"points": [
-						"size not synced"
 					]
 				}
 			]
