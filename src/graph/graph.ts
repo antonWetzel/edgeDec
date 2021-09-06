@@ -4,19 +4,20 @@ import * as Matrix from './matrix.js'
 import * as Template from './template.js'
 
 export let field: HTMLElement
-export let trash: HTMLElement
+let trash: HTMLElement
+let area: HTMLElement
 export let inTrash: boolean
 export let svg: SVGSVGElement
 
 let start: { x: number, y: number }
 let all: Box.Box[]
 
-export async function Setup(area: HTMLElement): Promise<void> {
+export async function Setup(): Promise<void> {
 
 	svg = document.getElementById("svg") as any
 	field = document.getElementById("field") as any
 	trash = document.getElementById("trash") as any
-
+	area = trash.parentElement as HTMLElement
 	all = []
 	start = { x: 0, y: 0 }
 	inTrash = false
@@ -49,13 +50,8 @@ export async function Setup(area: HTMLElement): Promise<void> {
 			let dx = x - start.x
 			let dy = y - start.y
 			start = { x: x, y: y }
-			let proms = []
 			for (let i = 0; i < all.length; i++) {
-				let box = all[i]
-				proms.push(box.moveBy(dx, dy))
-			}
-			for (let i = 0; i < proms.length; i++) {
-				await proms[i]
+				all[i].moveBy(dx, dy)
 			}
 		}
 	}
@@ -80,4 +76,12 @@ export function RemoveBox(box: Box.Box) {
 	let idx = all.indexOf(box)
 	all.splice(idx, 1)
 	field.removeChild(box.body)
+}
+
+export function ShowTrash() {
+	area.append(trash)
+}
+
+export function HideTrash() {
+	trash.remove()
 }

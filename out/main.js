@@ -6,7 +6,6 @@ import * as Display from './graph/display.js';
 import * as Template from './graph/template.js';
 import * as GPU from './gpu/gpu.js';
 document.body.onload = async () => {
-    let area = document.getElementById("area");
     let setupButton = (id, cb) => {
         let x = document.getElementById(id + "Button");
         if (x == null) {
@@ -32,7 +31,7 @@ document.body.onload = async () => {
         document.body.append(error);
         return;
     }
-    Graph.Setup(area);
+    Graph.Setup();
     let mode = document.cookie;
     if (mode != "light" && mode != "dark") {
         mode = "light";

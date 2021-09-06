@@ -14,7 +14,7 @@ export async function Setup() {
 }
 export class Shader extends Box.Box {
     constructor() {
-        super(450, 300, 0);
+        super(0);
         this.compute = undefined;
         this.buffer = null;
     }
@@ -84,7 +84,7 @@ export class Shader extends Box.Box {
             }
         };
         Graph.AddBox(this);
-        await this.moveBy(0, 0);
+        this.moveBy(0, 0);
     }
     async update() {
         if (this.inputs.length != this.maxInputs) {

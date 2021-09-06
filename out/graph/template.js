@@ -1,6 +1,7 @@
 import * as Box from './box.js';
 import * as Request from '../helper/request.js';
 import * as Shader from './shader.js';
+import * as Graph from './graph.js';
 let infos;
 export async function Setup() {
     infos = JSON.parse(await Request.getFile("../templates/info.json"));
@@ -41,6 +42,7 @@ export async function New() {
                     boxes[info.inputs[i]].outputs.push(line);
                     box.inputs.push(line);
                 }
+                box.moveTo(Graph.field.offsetWidth / 6, 0);
                 boxes.push(box);
             }
             for (let i = 0; i < boxes.length; i++) {
@@ -50,10 +52,9 @@ export async function New() {
                     let start = box.inputs[i].start;
                     x = Math.max(x, start.x + 250);
                 }
-                await box.moveTo(x, 200);
+                box.moveTo(x, Graph.field.offsetHeight / 3);
             }
             let counts = {};
-            let proms = [];
             for (let i = 0; i < boxes.length; i++) {
                 let box = boxes[i];
                 let x = box.x;
@@ -65,10 +66,7 @@ export async function New() {
                 else {
                     counts[x] = y + 1;
                 }
-                proms.push(box.moveBy(0, y * 100));
-            }
-            for (let i = 0; i < proms.length; i++) {
-                await proms[i];
+                box.moveBy(0, y * 100);
             }
         };
     }

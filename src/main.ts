@@ -9,8 +9,6 @@ import * as GPU from './gpu/gpu.js'
 
 document.body.onload = async () => {
 
-	let area = document.getElementById("area") as HTMLCanvasElement
-
 	let setupButton = (id: string, cb: () => void) => {
 		let x = document.getElementById(id + "Button") as HTMLButtonElement
 		if (x == null) {
@@ -37,7 +35,7 @@ document.body.onload = async () => {
 		document.body.append(error)
 		return
 	}
-	Graph.Setup(area)
+	Graph.Setup()
 
 	let mode = document.cookie;
 	if (mode != "light" && mode != "dark") {

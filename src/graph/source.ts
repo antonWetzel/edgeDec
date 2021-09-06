@@ -10,7 +10,7 @@ export class Source extends Box.Box {
 	zoom: number
 
 	constructor() {
-		super(300, 300, 0)
+		super(0)
 		this.zoom = 1
 
 		this.width = 1
@@ -36,9 +36,9 @@ export class Source extends Box.Box {
 			}
 			img.width = this.width * this.zoom
 			img.height = this.height * this.zoom
-			await this.moveBy(0, 0)
+			this.moveBy(0, 0)
 		}
-		await this.moveBy(0, 0)
+		this.moveBy(0, 0)
 		Graph.AddBox(this)
 	}
 	async SetupVIdeo(src: MediaStream | File) {
@@ -66,7 +66,7 @@ export class Source extends Box.Box {
 				handle = requestAnimationFrame(cb)
 			}
 			cb()
-			await this.moveBy(0, 0)
+			this.moveBy(0, 0)
 		}
 		vid.onpause = () => {
 			cancelAnimationFrame(handle)
@@ -81,7 +81,7 @@ export class Source extends Box.Box {
 			}
 			vid.width = this.width * this.zoom
 			vid.height = this.height * this.zoom
-			await this.moveBy(0, 0)
+			this.moveBy(0, 0)
 		}
 		this.updated = true
 		Graph.AddBox(this)

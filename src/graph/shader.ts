@@ -35,7 +35,7 @@ export class Shader extends Box.Box {
 	buffer: GPUBuffer | null
 
 	constructor() {
-		super(450, 300, 0)
+		super(0)
 		this.compute = undefined as any
 		this.buffer = null
 	}
@@ -112,7 +112,7 @@ export class Shader extends Box.Box {
 			}
 		}
 		Graph.AddBox(this)
-		await this.moveBy(0, 0)
+		this.moveBy(0, 0)
 	}
 
 	async update() {

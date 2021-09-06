@@ -12,7 +12,7 @@ export abstract class Box {
 	x: number
 	y: number
 
-	constructor(x: number, y: number, maxInputs: number) {
+	constructor(maxInputs: number) {
 		this.body = document.createElement("div")
 		this.body.className = "box"
 		this.inputs = []
@@ -21,8 +21,8 @@ export abstract class Box {
 		this.updated = false
 		this.result = undefined as any
 
-		this.x = x
-		this.y = y
+		this.x = Graph.field.clientWidth / 2
+		this.y = Graph.field.clientHeight / 2
 		this.body.draggable = true
 
 		let started = false
@@ -32,7 +32,7 @@ export abstract class Box {
 			if (ev.ctrlKey) {
 				dragged = new Line(this)
 			} else {
-				Graph.trash.style.display = "unset"
+				Graph.ShowTrash()
 			}
 
 			let div = document.createElement("div")
@@ -127,7 +127,7 @@ export abstract class Box {
 				}
 				dragged = null
 			} else {
-				Graph.trash.style.display = "none"
+				Graph.HideTrash()
 				if (Graph.inTrash) {
 					this.delete()
 				}
@@ -145,24 +145,21 @@ export abstract class Box {
 		Graph.RemoveBox(this)
 	}
 
-	async moveBy(x: number, y: number): Promise<void> {
-		await this.moveTo(this.x + x, this.y + y)
+	moveBy(x: number, y: number): void {
+		this.moveTo(this.x + x, this.y + y)
 	}
 
-	async moveTo(x: number, y: number): Promise<void> {
+	moveTo(x: number, y: number): void {
 		this.x = x
 		this.y = y
-		let xOff = (x - Graph.field.offsetLeft) - this.body.offsetWidth / 2
-		let yOFF = (y - Graph.field.offsetTop) - this.body.offsetHeight / 2
 		for (let i = 0; i < this.outputs.length; i++) {
 			this.outputs[i].setStart(x, y)
 		}
 		for (let i = 0; i < this.inputs.length; i++) {
 			this.inputs[i].setEnd(x, y)
 		}
-		await new Promise((resolve, _) => { setTimeout(resolve) })
-		this.body.style.marginLeft = xOff.toString() + "px"
-		this.body.style.marginTop = yOFF.toString() + "px"
+		this.body.style.marginLeft = (x - this.body.offsetWidth / 2).toString() + "px"
+		this.body.style.marginTop = (y - this.body.offsetHeight / 2).toString() + "px"
 	}
 
 	cycleCheck(checked: Box): boolean {

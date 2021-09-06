@@ -2,12 +2,7 @@
 	"categories": [
 		{
 			"name": "Todo",
-			"notes": [
-				{
-					"name": "bugged drag on zoom",
-					"points": []
-				}
-			]
+			"notes": []
 		},
 		{
 			"name": "Other",

@@ -2,15 +2,17 @@ import * as Shader from './shader.js';
 import * as Matrix from './matrix.js';
 import * as Template from './template.js';
 export let field;
-export let trash;
+let trash;
+let area;
 export let inTrash;
 export let svg;
 let start;
 let all;
-export async function Setup(area) {
+export async function Setup() {
     svg = document.getElementById("svg");
     field = document.getElementById("field");
     trash = document.getElementById("trash");
+    area = trash.parentElement;
     all = [];
     start = { x: 0, y: 0 };
     inTrash = false;
@@ -39,13 +41,8 @@ export async function Setup(area) {
             let dx = x - start.x;
             let dy = y - start.y;
             start = { x: x, y: y };
-            let proms = [];
             for (let i = 0; i < all.length; i++) {
-                let box = all[i];
-                proms.push(box.moveBy(dx, dy));
-            }
-            for (let i = 0; i < proms.length; i++) {
-                await proms[i];
+                all[i].moveBy(dx, dy);
             }
         }
     };
@@ -67,4 +64,10 @@ export function RemoveBox(box) {
     let idx = all.indexOf(box);
     all.splice(idx, 1);
     field.removeChild(box.body);
+}
+export function ShowTrash() {
+    area.append(trash);
+}
+export function HideTrash() {
+    trash.remove();
 }

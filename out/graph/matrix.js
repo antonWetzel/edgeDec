@@ -8,7 +8,7 @@ export async function Setup() {
 }
 export class Matrix extends Box.Box {
     constructor() {
-        super(450, 300, 1);
+        super(1);
         this.data = [
             [-1, 0, 1],
             [-2, 0, 2],
@@ -35,6 +35,7 @@ export class Matrix extends Box.Box {
                 this.recursiveReset();
                 await this.recursiveUpdate();
                 GPU.End();
+                this.moveBy(0, 0);
             }
         };
         decrease.innerText = "-";
@@ -70,6 +71,7 @@ export class Matrix extends Box.Box {
             this.recursiveReset();
             await this.recursiveUpdate();
             GPU.End();
+            this.moveBy(0, 0);
         };
         increase.innerText = "+";
         top.append(increase);
@@ -78,7 +80,7 @@ export class Matrix extends Box.Box {
     async Setup() {
         this.result = await Texture.Blanc(1, 1);
         Graph.AddBox(this);
-        await this.moveBy(0, 0);
+        this.moveBy(0, 0);
     }
     updateTable() {
         this.table.innerHTML = "";

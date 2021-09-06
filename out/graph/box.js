@@ -1,7 +1,7 @@
 import * as Graph from './graph.js';
 import * as GPU from '../gpu/gpu.js';
 export class Box {
-    constructor(x, y, maxInputs) {
+    constructor(maxInputs) {
         this.body = document.createElement("div");
         this.body.className = "box";
         this.inputs = [];
@@ -9,8 +9,8 @@ export class Box {
         this.maxInputs = maxInputs;
         this.updated = false;
         this.result = undefined;
-        this.x = x;
-        this.y = y;
+        this.x = Graph.field.clientWidth / 2;
+        this.y = Graph.field.clientHeight / 2;
         this.body.draggable = true;
         let started = false;
         this.body.ondragstart = (ev) => {
@@ -20,7 +20,7 @@ export class Box {
                 dragged = new Line(this);
             }
             else {
-                Graph.trash.style.display = "unset";
+                Graph.ShowTrash();
             }
             let div = document.createElement("div");
             if (ev.dataTransfer != null) {
@@ -114,7 +114,7 @@ export class Box {
                 dragged = null;
             }
             else {
-                Graph.trash.style.display = "none";
+                Graph.HideTrash();
                 if (Graph.inTrash) {
                     this.delete();
                 }
@@ -130,23 +130,20 @@ export class Box {
         }
         Graph.RemoveBox(this);
     }
-    async moveBy(x, y) {
-        await this.moveTo(this.x + x, this.y + y);
+    moveBy(x, y) {
+        this.moveTo(this.x + x, this.y + y);
     }
-    async moveTo(x, y) {
+    moveTo(x, y) {
         this.x = x;
         this.y = y;
-        let xOff = (x - Graph.field.offsetLeft) - this.body.offsetWidth / 2;
-        let yOFF = (y - Graph.field.offsetTop) - this.body.offsetHeight / 2;
         for (let i = 0; i < this.outputs.length; i++) {
             this.outputs[i].setStart(x, y);
         }
         for (let i = 0; i < this.inputs.length; i++) {
             this.inputs[i].setEnd(x, y);
         }
-        await new Promise((resolve, _) => { setTimeout(resolve); });
-        this.body.style.marginLeft = xOff.toString() + "px";
-        this.body.style.marginTop = yOFF.toString() + "px";
+        this.body.style.marginLeft = (x - this.body.offsetWidth / 2).toString() + "px";
+        this.body.style.marginTop = (y - this.body.offsetHeight / 2).toString() + "px";
     }
     cycleCheck(checked) {
         if (checked == this) {
