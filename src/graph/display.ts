@@ -34,7 +34,7 @@ export class Display extends Box.Box {
 				GPU.End()
 			}
 		}
-		this.moveBy(0, 0)
+		setTimeout(() => { this.moveBy(0, 0) }) //wait for canvas size
 		Graph.AddBox(this)
 	}
 	async update() {

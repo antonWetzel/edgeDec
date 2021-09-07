@@ -52,7 +52,9 @@ export async function New(): Promise<void> {
 			for (let i = 0; i < template.length; i++) {
 				let info = template[i]
 				let box = new Shader.Shader()
-				box.Setup(info.category, info.name)
+				let src = await Request.getFile("../shaders/" + info.category + "/" + info.name + ".wgsl")
+				let shaderInfo = Shader.infos[info.category][info.name]
+				box.Setup(info.name, src, shaderInfo)
 				for (let i = 0; i < info.inputs.length; i++) {
 					let line = new Box.Line(boxes[info.inputs[i]])
 					line.end = box

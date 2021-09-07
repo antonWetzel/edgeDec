@@ -1,4 +1,5 @@
 import * as Module from './module.js';
+import * as Request from '../helper/request.js';
 export let adapter;
 export let device;
 export let clearColor = { r: 0.2, g: 0.4, b: 0.6, a: 1.0 };
@@ -16,7 +17,8 @@ const vertices = new Float32Array([
 export async function Setup() {
     adapter = await window.navigator.gpu.requestAdapter();
     device = await adapter.requestDevice();
-    let module = await Module.New("../shaders/quad.wgsl");
+    let quad = await Request.getFile("../shaders/quad.wgsl");
+    let module = await Module.New(quad);
     let canvas = document.createElement("canvas");
     let context = canvas.getContext("webgpu");
     format = context.getPreferredFormat(adapter);
@@ -102,8 +104,8 @@ export function End() {
     device.queue.submit([encoder.finish()]);
     encoder = undefined;
 }
-export async function NewCompute(path) {
-    let module = await Module.New(path);
+export async function NewCompute(src) {
+    let module = await Module.New(src);
     let compute = {};
     let pipeline = device.createComputePipeline({
         compute: {

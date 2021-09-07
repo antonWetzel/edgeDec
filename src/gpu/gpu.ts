@@ -1,4 +1,5 @@
 import * as Module from './module.js'
+import * as Request from '../helper/request.js'
 
 export let adapter: GPUAdapter
 export let device: GPUDevice
@@ -21,7 +22,8 @@ const vertices = new Float32Array([
 export async function Setup(): Promise<void> {
 	adapter = await window.navigator.gpu.requestAdapter() as GPUAdapter
 	device = await adapter.requestDevice() as GPUDevice
-	let module = await Module.New("../shaders/quad.wgsl")
+	let quad = await Request.getFile("../shaders/quad.wgsl")
+	let module = await Module.New(quad)
 
 	let canvas = document.createElement("canvas") as Canvas
 	let context = canvas.getContext("webgpu") as GPUCanvasContext
@@ -132,8 +134,8 @@ export interface Compute {
 	Calculate: (input: Texture[], parameter: GPUBuffer | null, result: Texture) => void
 }
 
-export async function NewCompute(path: string): Promise<Compute> {
-	let module = await Module.New(path)
+export async function NewCompute(src: string): Promise<Compute> {
+	let module = await Module.New(src)
 	let compute = {} as Compute
 	let pipeline = device.createComputePipeline({
 		compute: {

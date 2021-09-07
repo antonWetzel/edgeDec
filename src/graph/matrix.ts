@@ -2,10 +2,12 @@ import * as Box from './box.js'
 import * as Graph from './graph.js'
 import * as GPU from '../gpu/gpu.js'
 import * as Texture from '../gpu/texture.js'
+import * as Request from '../helper/request.js'
 
 let compute: GPU.Compute
 export async function Setup() {
-	compute = await GPU.NewCompute("../shaders/matrix.wgsl")
+	let src = await Request.getFile("../shaders/matrix.wgsl")
+	compute = await GPU.NewCompute(src)
 }
 
 export class Matrix extends Box.Box {

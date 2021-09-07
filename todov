@@ -2,7 +2,12 @@
 	"categories": [
 		{
 			"name": "Todo",
-			"notes": []
+			"notes": [
+				{
+					"name": "Drop files",
+					"points": []
+				}
+			]
 		},
 		{
 			"name": "Other",

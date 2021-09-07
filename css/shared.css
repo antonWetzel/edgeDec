@@ -94,7 +94,7 @@ html, body {
 	min-width: 150px;
 	background-color: var(--fill-color);
 	display: flex;
-	border:3px solid var(--border-color);
+	border-bottom: 3px solid var(--border-color);
 }
 
 .box>table {
@@ -155,18 +155,19 @@ table>tr>td {
 	flex-grow: 1;
 	display: flex;
 	flex-direction:column;
-	align-items: center;
+	align-items: stretch;
 }
 .scroll>* {
-	border:3px solid var(--border-color);
+	margin: 0px;
+	padding: 20px 0px;
+	border: 3px solid var(--border-color);
 	background-color: var(--fill-color);
 	flex-grow: 0;
-	width: 100%;
 }
 
 .scroll>.head {
 	font-size: 300%;
-	padding: 5px 0px;
+	padding: 10px;
 	text-align: center;
 }
 
@@ -174,6 +175,7 @@ table>tr>td {
 	font-size: xx-large;
 }
 .scroll .tooltip {
+	margin: 10px;
 	font-size: x-large;
 	color: var(--dimtext-color);
 }

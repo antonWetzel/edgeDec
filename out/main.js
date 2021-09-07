@@ -14,11 +14,12 @@ document.body.onload = async () => {
         }
         x.onclick = cb;
     };
+    setupButton("webcam", () => { Source.Webcam(); });
     setupButton("file", () => { Source.File(); });
-    setupButton("display", () => { new Display.Display().Setup(); });
     setupButton("shader", () => { Shader.New(); });
     setupButton("matrix", () => { new Matrix.Matrix().Setup(); });
-    setupButton("webcam", () => { Source.Webcam(); });
+    setupButton("custom", () => { Shader.Custom(); });
+    setupButton("display", () => { new Display.Display().Setup(); });
     setupButton("template", Template.New);
     try {
         await GPU.Setup();

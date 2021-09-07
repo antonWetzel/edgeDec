@@ -4,7 +4,7 @@ import * as Texture from '../gpu/texture.js'
 import * as Request from '../helper/request.js'
 import * as Graph from './graph.js'
 
-type Paramter = {
+type Parameter = {
 	name: string,
 	min: number,
 	step: number,
@@ -14,11 +14,11 @@ type Paramter = {
 type ShaderInfo = {
 	inputs: number,
 	tooltip: string,
-	parameter: Paramter[]
+	parameter: Parameter[]
 }
 type CategoryInfo = { [key: string]: ShaderInfo }
 
-let infos: { [key: string]: CategoryInfo }
+export let infos: { [key: string]: CategoryInfo }
 
 export async function Setup() {
 	let locations: string[] = JSON.parse(await Request.getFile("../shaders/info.json"))
@@ -40,9 +40,8 @@ export class Shader extends Box.Box {
 		this.buffer = null
 	}
 
-	async Setup(category: string, name: string) {
-		let info = infos[category][name]
-		this.compute = await GPU.NewCompute("../shaders/" + category + "/" + name + ".wgsl")
+	async Setup(name: string, src: string, info: { inputs: number, parameter: Parameter[] }) {
+		this.compute = await GPU.NewCompute(src)
 		let body = document.createElement("div")
 		body.className = "shader"
 		body.innerHTML = name
@@ -156,6 +155,7 @@ export async function New(): Promise<void> {
 
 		let category = infos[cateName]
 		for (let key in category) {
+			let info = category[key]
 			let button = document.createElement("div")
 			button.className = "button"
 			let name = document.createElement("div")
@@ -164,14 +164,43 @@ export async function New(): Promise<void> {
 			button.append(name)
 			let tooltip = document.createElement("div")
 			tooltip.className = "tooltip"
-			tooltip.innerText = category[key].tooltip
+			tooltip.innerText = info.tooltip
 			button.append(tooltip)
 			scroll.appendChild(button)
 
 			button.onclick = async (ev) => {
 				let shader = new Shader()
-				await shader.Setup(cateName, key)
+				let src = await Request.getFile("../shaders/" + cateName + "/" + key + ".wgsl")
+				await shader.Setup(key, src, info)
 			}
 		}
 	}
 }
+
+export async function Custom() {
+	let input = document.createElement("input")
+	input.type = "file"
+	input.accept = ".wgsl"
+	input.onchange = async () => {
+		let files = input.files
+		if (files == null || files.length == 0) {
+			return
+		}
+		let file = files[0]
+		let sep = file.name.split(".")
+		let format = sep[sep.length - 1]
+		let name = sep[sep.length - 2]
+		if (format != "wgsl") {
+			alert("onyl 'wgsl' is supported, not '" + format + "'")
+			return
+		}
+		let src = await file.text()
+		//todo: check if valid
+		let info = JSON.parse(src.split("\n")[0].substr(2))
+
+		let shader = new Shader()
+		await shader.Setup(name, src, info)
+	}
+	input.click()
+}
+
