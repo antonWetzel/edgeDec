@@ -18,6 +18,7 @@ export async function Setup(): Promise<void> {
 	field = document.getElementById("field") as any
 	trash = document.getElementById("trash") as any
 	area = trash.parentElement as HTMLElement
+	HideTrash()
 	all = []
 	start = { x: 0, y: 0 }
 	inTrash = false
@@ -85,3 +86,4 @@ export function ShowTrash() {
 export function HideTrash() {
 	trash.remove()
 }
+

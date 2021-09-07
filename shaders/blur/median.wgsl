@@ -39,5 +39,6 @@ fn main([[builtin(workgroup_id)]] WorkGroupID : vec3<u32>) {
 		values[min] = val;
 		indices[min] = idx;
 	}
-	textureStore(output, id, vec4<f32>(colors[indices[dim * dim / 2]], 1.0));
+	let idx = indices[dim * dim / 2];
+	textureStore(output, id, vec4<f32>(colors[idx], 1.0));
 }

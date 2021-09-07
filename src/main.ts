@@ -24,7 +24,7 @@ document.body.onload = async () => {
 	setupButton("matrix", () => { new Matrix.Matrix().Setup() })
 	setupButton("custom", () => { Shader.Custom() })
 	setupButton("display", () => { new Display.Display().Setup() })
-	setupButton("template", Template.New)
+	setupButton("template", () => { Template.New() })
 
 	try {
 		await GPU.Setup()

@@ -13,6 +13,7 @@ export async function Setup() {
     field = document.getElementById("field");
     trash = document.getElementById("trash");
     area = trash.parentElement;
+    HideTrash();
     all = [];
     start = { x: 0, y: 0 };
     inTrash = false;
