@@ -36,7 +36,11 @@ document.body.onload = async () => {
 		document.body.append(error)
 		return
 	}
-	Graph.Setup()
+
+	await Graph.Setup()
+	await Shader.Setup()
+	await Matrix.Setup()
+	await Template.Setup()
 
 	let mode = document.cookie;
 	if (mode != "light" && mode != "dark") {

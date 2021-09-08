@@ -1,4 +1,4 @@
-import * as Box from './box.js'
+
 import * as Request from '../helper/request.js'
 import * as Shader from './shader.js'
 import * as Graph from './graph.js'
@@ -48,7 +48,7 @@ export async function New(): Promise<void> {
 
 		button.onclick = async (ev) => {
 			let template = JSON.parse(await Request.getFile("../templates/" + key + ".json")) as Template
-			let boxes: Box.Box[] = []
+			let boxes: Graph.Box[] = []
 			for (let i = 0; i < template.length; i++) {
 				let info = template[i]
 				let box = new Shader.Shader()
@@ -56,12 +56,11 @@ export async function New(): Promise<void> {
 				let shaderInfo = Shader.infos[info.category][info.name]
 				box.Setup(info.name, src, shaderInfo)
 				for (let i = 0; i < info.inputs.length; i++) {
-					let line = new Box.Line(boxes[info.inputs[i]])
+					let line = new Graph.Line(boxes[info.inputs[i]])
 					line.end = box
 					boxes[info.inputs[i]].outputs.push(line)
 					box.inputs.push(line)
 				}
-				box.moveTo(Graph.field.offsetWidth / 6, 0)
 				boxes.push(box)
 			}
 			for (let i = 0; i < boxes.length; i++) {
@@ -71,7 +70,7 @@ export async function New(): Promise<void> {
 					let start = box.inputs[i].start
 					x = Math.max(x, start.x + 250)
 				}
-				box.moveTo(x, Graph.field.offsetHeight / 3)
+				box.moveBy(x - box.x, 0)
 			}
 			let counts: { [key: number]: number } = {}
 			for (let i = 0; i < boxes.length; i++) {

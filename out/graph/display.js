@@ -1,8 +1,7 @@
-import * as Box from './box.js';
 import * as GPU from '../gpu/gpu.js';
 import * as Texture from '../gpu/texture.js';
 import * as Graph from './graph.js';
-export class Display extends Box.Box {
+export class Display extends Graph.Box {
     constructor() {
         super(1);
         this.canvas = undefined;
@@ -28,8 +27,8 @@ export class Display extends Box.Box {
                 GPU.End();
             }
         };
-        setTimeout(() => { this.moveBy(0, 0); }); //wait for canvas size
         Graph.AddBox(this);
+        this.moveBy(0, 0);
     }
     async update() {
         if (this.inputs.length == 1) {

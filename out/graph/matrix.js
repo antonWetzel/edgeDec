@@ -1,4 +1,3 @@
-import * as Box from './box.js';
 import * as Graph from './graph.js';
 import * as GPU from '../gpu/gpu.js';
 import * as Texture from '../gpu/texture.js';
@@ -8,7 +7,7 @@ export async function Setup() {
     let src = await Request.getFile("../shaders/matrix.wgsl");
     compute = await GPU.NewCompute(src);
 }
-export class Matrix extends Box.Box {
+export class Matrix extends Graph.Box {
     constructor() {
         super(1);
         this.data = [
@@ -25,7 +24,7 @@ export class Matrix extends Box.Box {
         this.body.append(this.table);
         let decrease = document.createElement("div");
         decrease.className = "button";
-        decrease.onclick = async () => {
+        decrease.onmousedown = async () => {
             if (this.data.length > 1) {
                 this.data.pop();
                 for (let i = 0; i < this.data.length; i++) {
@@ -40,11 +39,11 @@ export class Matrix extends Box.Box {
                 this.moveBy(0, 0);
             }
         };
-        decrease.innerText = "-";
+        decrease.innerText = "−";
         top.append(decrease);
         let shift = document.createElement("div");
         shift.className = "button";
-        shift.onclick = async () => {
+        shift.onmousedown = async () => {
             this.negative = !this.negative;
             this.buffer = this.updateBuffer();
             GPU.Start();
@@ -59,7 +58,7 @@ export class Matrix extends Box.Box {
         top.append(shift);
         let increase = document.createElement("div");
         increase.className = "button";
-        increase.onclick = async () => {
+        increase.onmousedown = async () => {
             let row = [];
             for (let i = 0; i < this.data.length; i++) {
                 this.data[i].push(0);
@@ -91,7 +90,7 @@ export class Matrix extends Box.Box {
             for (let j = 0; j < this.data.length; j++) {
                 let cell = document.createElement("td");
                 cell.innerText = this.data[i][j].toString();
-                cell.onclick = (ev) => {
+                cell.onmousedown = (ev) => {
                     ev.stopPropagation();
                     let area = document.createElement("div");
                     area.className = "popArea";

@@ -7,6 +7,7 @@ html, body {
 	font-family: Arial, Helvetica, sans-serif;
 	color: var(--text-color);
 	background-color: var(--fill-color);
+	user-select: none;
 }
 
 ::-webkit-scrollbar {
@@ -146,6 +147,7 @@ table>tr>td {
 	display: flex;
 	overflow: scroll;
 	background-color: var(--dim-color);
+	scrollbar-width: none;
 }
 
 .popArea>.scroll {
@@ -156,6 +158,7 @@ table>tr>td {
 	display: flex;
 	flex-direction:column;
 	align-items: stretch;
+	scrollbar-width: none;
 }
 .scroll>* {
 	margin: 0px;
@@ -163,6 +166,7 @@ table>tr>td {
 	border: 3px solid var(--border-color);
 	background-color: var(--fill-color);
 	flex-grow: 0;
+
 }
 
 .scroll>.head {

@@ -1,4 +1,4 @@
-import * as Box from './box.js'
+
 import * as GPU from '../gpu/gpu.js'
 import * as Texture from '../gpu/texture.js'
 import * as Request from '../helper/request.js'
@@ -29,7 +29,7 @@ export async function Setup() {
 	}
 }
 
-export class Shader extends Box.Box {
+export class Shader extends Graph.Box {
 
 	compute: GPU.Compute
 	buffer: GPUBuffer | null
@@ -60,8 +60,8 @@ export class Shader extends Box.Box {
 		}
 
 		this.body.onclick = (ev) => {
-			ev.stopPropagation()
-			if (info.parameter.length > 0) {
+			if (ev.ctrlKey && info.parameter.length > 0) {
+				ev.stopPropagation()
 				let area = document.createElement("div")
 				area.className = "popArea"
 				document.body.appendChild(area)

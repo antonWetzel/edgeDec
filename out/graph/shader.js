@@ -1,4 +1,3 @@
-import * as Box from './box.js';
 import * as GPU from '../gpu/gpu.js';
 import * as Texture from '../gpu/texture.js';
 import * as Request from '../helper/request.js';
@@ -12,7 +11,7 @@ export async function Setup() {
         infos[locations[i]] = category;
     }
 }
-export class Shader extends Box.Box {
+export class Shader extends Graph.Box {
     constructor() {
         super(0);
         this.compute = undefined;
@@ -35,8 +34,8 @@ export class Shader extends Box.Box {
             this.buffer = GPU.CreateBuffer(new Float32Array(parameter), GPUBufferUsage.UNIFORM);
         }
         this.body.onclick = (ev) => {
-            ev.stopPropagation();
-            if (info.parameter.length > 0) {
+            if (ev.ctrlKey && info.parameter.length > 0) {
+                ev.stopPropagation();
                 let area = document.createElement("div");
                 area.className = "popArea";
                 document.body.appendChild(area);

@@ -1,8 +1,7 @@
-import * as Box from './box.js';
 import * as GPU from '../gpu/gpu.js';
 import * as Texture from '../gpu/texture.js';
 import * as Graph from './graph.js';
-export class Source extends Box.Box {
+export class Source extends Graph.Box {
     constructor() {
         super(0);
         this.zoom = 1;
@@ -30,8 +29,8 @@ export class Source extends Box.Box {
             img.height = this.height * this.zoom;
             this.moveBy(0, 0);
         };
-        this.moveBy(0, 0);
         Graph.AddBox(this);
+        this.moveBy(0, 0);
     }
     async SetupVIdeo(src) {
         let vid = document.createElement("video");
