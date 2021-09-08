@@ -3,6 +3,7 @@
 ## Overview
 
 Website to run and display different WebGPU compute shaders chained together.
+Works with Chrome Canary, Firefox Nightly is missing WebGPU functions.
 
 ## Elements
 
