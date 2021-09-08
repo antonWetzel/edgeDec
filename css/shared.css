@@ -73,7 +73,6 @@ html, body {
 }
 
 .shader {
-
 	background-color: var(--fill-color);
 	font-size: x-large;
 	text-align: center;
@@ -84,9 +83,11 @@ html, body {
 	display: flex;
 }
 .shader>.bot>input {
-	width: 90%;
+	margin: 10px 30px;
+	width: 85%;
 }
 .shader>.bot>.number {
+	margin: 10px 30px;
 	flex-grow: 1;
 	text-align: right;
 }
