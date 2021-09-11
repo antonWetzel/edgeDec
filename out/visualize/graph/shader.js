@@ -1,6 +1,6 @@
 import * as GPU from '../gpu/gpu.js';
 import * as Texture from '../gpu/texture.js';
-import * as Request from '../helper/request.js';
+import * as Request from '../../helper/request.js';
 import * as Graph from './graph.js';
 export let infos;
 export async function Setup() {
@@ -139,7 +139,11 @@ export async function New() {
         }
     }
 }
-export async function Custom() {
+export async function Custom(ev) {
+    if (ev.ctrlKey) {
+        window.open("editor.html");
+        return;
+    }
     let input = document.createElement("input");
     input.type = "file";
     input.accept = ".wgsl";

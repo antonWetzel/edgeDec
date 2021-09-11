@@ -3,20 +3,9 @@ import * as GPU from '../gpu/gpu.js'
 import * as Texture from '../gpu/texture.js'
 import * as Request from '../helper/request.js'
 import * as Graph from './graph.js'
+import * as Info from '../helper/info.js'
 
-type Parameter = {
-	name: string,
-	min: number,
-	step: number,
-	max: number,
-	default: number,
-}
-type ShaderInfo = {
-	inputs: number,
-	tooltip: string,
-	parameter: Parameter[]
-}
-type CategoryInfo = { [key: string]: ShaderInfo }
+type CategoryInfo = { [key: string]: Info.Shader }
 
 export let infos: { [key: string]: CategoryInfo }
 
@@ -40,7 +29,7 @@ export class Shader extends Graph.Box {
 		this.buffer = null
 	}
 
-	async Setup(name: string, src: string, info: { inputs: number, parameter: Parameter[] }) {
+	async Setup(name: string, src: string, info: { inputs: number, parameter: Info.Parameter[] }) {
 		this.compute = await GPU.NewCompute(src)
 		let body = document.createElement("div")
 		body.className = "shader"
@@ -177,7 +166,11 @@ export async function New(): Promise<void> {
 	}
 }
 
-export async function Custom() {
+export async function Custom(ev: MouseEvent) {
+	if (ev.ctrlKey) {
+		window.open("editor.html")
+		return
+	}
 	let input = document.createElement("input")
 	input.type = "file"
 	input.accept = ".wgsl"
@@ -195,9 +188,7 @@ export async function Custom() {
 			return
 		}
 		let src = await file.text()
-		//todo: check if valid
-		let info = JSON.parse(src.split("\n")[0].substr(2))
-
+		let info = Info.Parse(src)
 		let shader = new Shader()
 		await shader.Setup(name, src, info)
 	}
