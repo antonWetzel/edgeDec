@@ -16,7 +16,7 @@ body {
 	display: grid;
 	align-items: stretch;
 	justify-items: stretch;
-	grid-template-columns: 2fr 1fr;
+	grid-template-columns: 1fr 1fr;
 	grid-template-rows: auto 1fr 1fr;
 }
 
@@ -35,6 +35,9 @@ body {
 	overflow: scroll;
 	color: var(--text-color);
 	scrollbar-width: none;
+	font-size: xx-large;
+	padding: 10px;
+	font-family: monospace;
 }
 
 #input {
@@ -44,6 +47,9 @@ body {
 	grid-column: 2 / 3;
 	grid-row: 2 / 3;
 	overflow: scroll;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 #output {
 	margin: 10px;
@@ -51,9 +57,21 @@ body {
 	border: 3px solid var(--border-color);
 	grid-column: 2 / 3;
 	grid-row: 3 / 4;
-	overflow: hidden;
+	overflow: scroll;
+	scrollbar-width: none;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
+#errorText {
+	margin: 10px;
+	white-space: pre;  
+	color: var(--text-color);
+	font-size: xx-large;
+	padding: 10px;
+	font-family: monospace;
+}
 
 .button{
 	text-align: center;

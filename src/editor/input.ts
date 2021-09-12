@@ -29,14 +29,15 @@ export function Setup() {
 				return
 			}
 			let file = files[0]
-			let sep = file.name.split(".")
-			let format = sep[sep.length - 1]
+			let sep = file.name.lastIndexOf(".")
+			let format = file.name.substring(sep + 1)
+			let name = file.name.substring(0, sep)
 			switch (format) {
 				case "png":
 				case "jpg":
 				case "jpeg":
 				case "jfif":
-					await AddTexture(file)
+					await AddTexture(file, name)
 					break
 				case "mp4":
 				case "webm":
@@ -52,13 +53,14 @@ export function Setup() {
 	}
 }
 
-async function AddTexture(file: File) {
+async function AddTexture(file: File, name: string) {
 	img.src = URL.createObjectURL(file)
 
 	let texture = await Texture.FromImage(img)
 	textures.push(texture)
 	let button = document.createElement("div")
 	button.className = "button"
+	button.innerText = name
 	add.insertAdjacentElement("beforebegin", button)
 	button.onclick = (ev) => {
 		if (ev.ctrlKey) {
@@ -70,6 +72,7 @@ async function AddTexture(file: File) {
 				}
 			}
 			button.remove()
+			Output.Update(Text.text.value)
 		} else {
 			img.src = URL.createObjectURL(file)
 		}

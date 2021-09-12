@@ -3,23 +3,28 @@ import * as Info from '../helper/info.js'
 import * as Texture from '../gpu/texture.js'
 import * as Input from './input.js'
 
+let output: HTMLDivElement
 let canvas: GPU.Canvas
+let errorText: HTMLDivElement
 let texture: GPU.Texture
 
 export async function Setup() {
-	let output = document.getElementById("output") as HTMLDivElement
+	output = document.getElementById("output") as HTMLDivElement
 	canvas = await GPU.Create()
-	output.append(canvas)
-	canvas.resize(output.clientWidth, output.clientHeight)
-	document.body.onresize = (ev) => {
-		canvas.resize(output.clientWidth, output.clientHeight)
-	}
+	errorText = document.createElement("div")
+	errorText.id = "errorText"
 	texture = await Texture.Blanc(1, 1)
 }
 
 export async function Update(src: string) {
 	let info = Info.Parse(src)
+	if (typeof info == "string") {
+		Error(info)
+		return
+	}
+	GPU.device.pushErrorScope('validation')
 	let calc = await GPU.NewCompute(src)
+
 	let buffer: GPUBuffer | null
 	if (info.parameter.length > 0) {
 		let params = new Float32Array(info.parameter.length)
@@ -31,15 +36,30 @@ export async function Update(src: string) {
 		buffer = null
 	}
 	if (Input.textures.length == 0) {
-		console.log("no inputs")
+		Error("no inputs")
 		return
 	}
 	if (Input.textures[0].width != texture.width || Input.textures[0].height != texture.height) {
 		texture = await Texture.Blanc(Input.textures[0].width, Input.textures[0].height)
+		canvas.resize(texture.width, texture.height)
 	}
-	console.clear()
+	output.style.display = "flex"
+	errorText.remove()
+	output.append(canvas)
 	GPU.Start()
 	calc.Calculate(Input.textures, buffer, texture)
 	canvas.draw(texture)
 	GPU.End()
+	let error = await GPU.device.popErrorScope() as GPUValidationError
+	if (error != null) {
+		Error(error.message)
+		return
+	}
+}
+
+function Error(text: string) {
+	canvas.remove()
+	output.append(errorText)
+	output.style.display = "unset"
+	errorText.innerText = text
 }

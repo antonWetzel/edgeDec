@@ -19,6 +19,5 @@ document.body.onload = async () => {
 	Input.Setup()
 	await Output.Setup()
 	await Text.Setup()
-
+	Output.Update(Text.text.value)
 }
-

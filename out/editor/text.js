@@ -9,6 +9,7 @@ export async function Setup() {
         setTimeout(() => { Output.Update(text.value); });
         ev.stopPropagation();
         if (ev.ctrlKey && ev.code == "KeyS") {
+            Download();
             ev.preventDefault();
             return;
         }
@@ -16,10 +17,6 @@ export async function Setup() {
             ev.preventDefault();
             let start = text.selectionStart;
             let end = text.selectionEnd;
-            if (start != end) {
-                console.log("TODO: range tabbing");
-                return;
-            }
             // set textarea value to: text before caret + tab + text after caret
             text.value = text.value.substring(0, start) + "\t" + text.value.substring(end);
             // put caret at right position again
@@ -47,4 +44,14 @@ export async function Setup() {
             return;
         }
     };
+}
+function Download() {
+    let name = prompt("Download name");
+    if (name == null || name.length == 0) {
+        return;
+    }
+    let a = document.createElement("a");
+    a.href = "data:text/plain;charset=UTF-8," + text.value;
+    a.setAttribute("download", name + ".wgsl");
+    a.click();
 }

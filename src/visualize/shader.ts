@@ -188,7 +188,7 @@ export async function Custom(ev: MouseEvent) {
 			return
 		}
 		let src = await file.text()
-		let info = Info.Parse(src)
+		let info = Info.Parse(src) as Info.Shader
 		let shader = new Shader()
 		await shader.Setup(name, src, info)
 	}
