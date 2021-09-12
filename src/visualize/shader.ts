@@ -35,6 +35,11 @@ export class Shader extends Graph.Box {
 		body.className = "shader"
 		body.innerHTML = name
 		this.maxInputs = info.inputs
+		if (info.parameter.length > 0) {
+			body.title = "Click to edit parameter"
+		} else {
+			body.title = "No parameter to edit"
+		}
 		this.body.append(body)
 
 		this.result = await Texture.Blanc(1, 1)
@@ -166,11 +171,7 @@ export async function New(): Promise<void> {
 	}
 }
 
-export async function Custom(ev: MouseEvent) {
-	if (ev.ctrlKey) {
-		window.open("editor.html")
-		return
-	}
+export async function Custom() {
 	let input = document.createElement("input")
 	input.type = "file"
 	input.accept = ".wgsl"

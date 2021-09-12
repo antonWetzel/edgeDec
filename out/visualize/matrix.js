@@ -40,6 +40,7 @@ export class Matrix extends Graph.Box {
             }
         };
         decrease.innerText = "−";
+        decrease.title = "Decrease matrix size";
         top.append(decrease);
         let shift = document.createElement("div");
         shift.className = "button";
@@ -75,6 +76,7 @@ export class Matrix extends Graph.Box {
             this.moveBy(0, 0);
         };
         increase.innerText = "+";
+        increase.title = "Increase matrix size";
         top.append(increase);
         this.updateTable();
     }
@@ -85,6 +87,7 @@ export class Matrix extends Graph.Box {
     }
     updateTable() {
         this.table.innerHTML = "";
+        this.table.title = "Click on value to edit";
         for (let i = 0; i < this.data.length; i++) {
             let row = document.createElement("tr");
             for (let j = 0; j < this.data.length; j++) {

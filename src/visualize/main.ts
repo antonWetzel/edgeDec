@@ -10,7 +10,7 @@ import * as Stylesheet from '../helper/stylesheet.js'
 
 document.body.onload = async () => {
 
-	let setupButton = (id: string, cb: (ev: MouseEvent) => void) => {
+	let setupButton = (id: string, cb: () => void) => {
 		let x = document.getElementById(id + "Button") as HTMLButtonElement
 		if (x == null) {
 			alert("id problem")
@@ -19,13 +19,14 @@ document.body.onload = async () => {
 		x.onclick = cb
 	}
 
-	setupButton("webcam", (ev) => { Source.Webcam() })
-	setupButton("file", (ev) => { Source.File() })
-	setupButton("shader", (ev) => { Shader.New() })
-	setupButton("matrix", (ev) => { new Matrix.Matrix().Setup() })
-	setupButton("custom", (ev) => { Shader.Custom(ev) })
-	setupButton("display", (ev) => { new Display.Display().Setup() })
-	setupButton("template", (ev) => { Template.New() })
+	setupButton("webcam", () => { Source.Webcam() })
+	setupButton("file", () => { Source.File() })
+	setupButton("shader", () => { Shader.New() })
+	setupButton("matrix", () => { new Matrix.Matrix().Setup() })
+	setupButton("custom", () => { Shader.Custom() })
+	setupButton("display", () => { new Display.Display().Setup() })
+	setupButton("template", () => { Template.New() })
+	setupButton("editor", () => { window.open("./editor.html") })
 
 	try {
 		await GPU.Setup()
