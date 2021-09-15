@@ -28,6 +28,10 @@ export async function Setup(): Promise<void> {
 	let canvas = document.createElement("canvas") as Canvas
 	let context = canvas.getContext("webgpu") as GPUCanvasContext
 
+	if (device.queue.copyExternalImageToTexture == undefined) {
+		throw "copyExternalImageToTexture missing"
+	}
+
 	format = context.getPreferredFormat(adapter)
 
 	pipeline = device.createRenderPipeline({

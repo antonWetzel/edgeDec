@@ -21,6 +21,9 @@ export async function Setup() {
     let module = await Module.New(quad);
     let canvas = document.createElement("canvas");
     let context = canvas.getContext("webgpu");
+    if (device.queue.copyExternalImageToTexture == undefined) {
+        throw "copyExternalImageToTexture missing";
+    }
     format = context.getPreferredFormat(adapter);
     pipeline = device.createRenderPipeline({
         vertex: {
