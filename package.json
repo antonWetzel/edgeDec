@@ -1,0 +1,14 @@
+{
+  "name": "edgedec",
+  "version": "1.0.0",
+  "description": "Website to run and display different WebGPU compute shaders chained together.\r Works with Chrome Canary, Firefox Nightly is missing WebGPU functions.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antonWetzel/edgeDec.git"
+  },
+  "homepage": "https://antonWetzel.github.io/edgeDec/",
+  "devDependencies": {
+    "@webgpu/types": "^0.1.6",
+    "typescript": "^4.4.3"
+  }
+}

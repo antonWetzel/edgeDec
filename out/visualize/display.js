@@ -2,6 +2,8 @@ import * as GPU from '../gpu/gpu.js';
 import * as Texture from '../gpu/texture.js';
 import * as Graph from './graph.js';
 export class Display extends Graph.Box {
+    canvas;
+    zoom;
     constructor() {
         super(1);
         this.canvas = undefined;

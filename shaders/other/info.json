@@ -3,5 +3,23 @@
 		"inputs": 1,
 		"tooltip": "Copy the values without any change",
 		"parameter": []
+	},
+	"pixelate": {
+		"inputs": 1,
+		"tooltip": "Replace pixels with the average",
+		"parameter": [
+			{
+				"radius": "radius",
+				"min": 0.0,
+				"step": 1.0,
+				"max": 10.0,
+				"default": 3
+			}
+		]
+	},
+	"ascii": {
+		"inputs": 1,
+		"tooltip": "Replace pixels with an ascii char",
+		"parameter": []
 	}
 }

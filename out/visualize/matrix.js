@@ -8,6 +8,10 @@ export async function Setup() {
     compute = await GPU.NewCompute(src);
 }
 export class Matrix extends Graph.Box {
+    negative;
+    data;
+    buffer;
+    table;
     constructor() {
         super(1);
         this.data = [

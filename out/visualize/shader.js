@@ -13,6 +13,8 @@ export async function Setup() {
     }
 }
 export class Shader extends Graph.Box {
+    compute;
+    buffer;
     constructor() {
         super(0);
         this.compute = undefined;

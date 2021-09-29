@@ -2,6 +2,9 @@ import * as GPU from '../gpu/gpu.js';
 import * as Texture from '../gpu/texture.js';
 import * as Graph from './graph.js';
 export class Source extends Graph.Box {
+    width;
+    height;
+    zoom;
     constructor() {
         super(0);
         this.zoom = 1;

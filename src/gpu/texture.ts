@@ -29,7 +29,7 @@ export async function FromVideo(vid: HTMLVideoElement): Promise<GPU.Texture> {
 		alert("video canvas problem")
 		return new Promise(() => { })
 	}
-	ctx.drawImage(vid, 0, 0, vid.videoWidth, vid.videoHeight);
+	ctx.drawImage(vid, 0, 0, vid.videoWidth, vid.videoHeight)
 	let texture = GPU.device.createTexture({
 		size: { width: canvas.width, height: canvas.height },
 		format: GPU.format,

@@ -121,6 +121,14 @@ export function HideTrash() {
     trash.remove();
 }
 export class Box {
+    inputs;
+    outputs;
+    maxInputs;
+    updated;
+    result;
+    body;
+    x;
+    y;
     constructor(maxInputs) {
         this.body = document.createElement("div");
         this.body.className = "box";
@@ -219,6 +227,9 @@ export class Box {
     }
 }
 export class Line {
+    line;
+    start;
+    end;
     constructor(start) {
         this.line = document.createElementNS("http://www.w3.org/2000/svg", "line");
         this.start = start;
