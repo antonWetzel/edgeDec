@@ -140,7 +140,7 @@ export class Box {
         this.x = field.clientWidth / 2;
         this.y = field.clientHeight / 2;
         this.body.onmousedown = (ev) => {
-            if (ev.ctrlKey) {
+            if (ev.ctrlKey || ev.metaKey) {
                 dragged = new Line(this);
                 modus = "line";
             }

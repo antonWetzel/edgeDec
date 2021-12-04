@@ -154,7 +154,7 @@ export abstract class Box {
 		this.y = field.clientHeight / 2
 
 		this.body.onmousedown = (ev) => {
-			if (ev.ctrlKey) {
+			if (ev.ctrlKey || ev.metaKey) {
 				dragged = new Line(this)
 				modus = "line"
 			} else {
@@ -290,4 +290,3 @@ export class Line {
 		this.line.setAttribute("y2", y.toString() + "px")
 	}
 }
-
