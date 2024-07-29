@@ -1,18 +1,18 @@
 //special shader for matrix computation
 
-[[block]] struct Matrix {
-	size: f32;
-	min: f32;
-	max: f32;
-	data: array<f32>;
+struct Matrix {
+	size: f32,
+	min: f32,
+	max: f32,
+	data: array<f32>,
 };
 
-[[group(0), binding(0)]] var input : texture_2d<f32>;
-[[group(0), binding(1)]] var output : texture_storage_2d<rgba8unorm, write>;
-[[group(0), binding(2)]] var<storage, read> matrix: Matrix;
+@group(0) @binding(0) var input: texture_2d<f32>;
+@group(0) @binding(1) var output: texture_storage_2d<rgba8unorm, write>;
+@group(0) @binding(2) var<storage, read> matrix: Matrix;
 
-[[stage(compute), workgroup_size(1, 1, 1)]]
-fn main([[builtin(workgroup_id)]] WorkGroupID : vec3<u32>) {
+@compute @workgroup_size(1, 1, 1)
+fn main(@builtin(workgroup_id) WorkGroupID: vec3<u32>) {
 	let id = vec2<i32>(WorkGroupID.xy);
 
 	let size = i32(matrix.size);

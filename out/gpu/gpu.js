@@ -24,7 +24,7 @@ export async function Setup() {
     if (device.queue.copyExternalImageToTexture == undefined) {
         throw "copyExternalImageToTexture missing";
     }
-    format = context.getPreferredFormat(adapter);
+    format = window.navigator.gpu.getPreferredCanvasFormat();
     pipeline = device.createRenderPipeline({
         vertex: {
             module: module,
@@ -49,7 +49,8 @@ export async function Setup() {
         primitive: {
             topology: 'triangle-strip',
             stripIndexFormat: "uint32"
-        }
+        },
+        layout: "auto",
     });
     quadBuffer = CreateBuffer(vertices, GPUBufferUsage.VERTEX);
     sampler = device.createSampler({
@@ -60,7 +61,6 @@ export async function Setup() {
 export async function Create() {
     let canvas = document.createElement("canvas");
     let context = canvas.getContext("webgpu");
-    let format = context.getPreferredFormat(adapter);
     context.configure({
         device: device,
         format: format
@@ -68,7 +68,7 @@ export async function Create() {
     canvas.draw = (texture) => {
         let renderPass = encoder.beginRenderPass({
             colorAttachments: [
-                { loadValue: clearColor, storeOp: "store", view: context.getCurrentTexture().createView() },
+                { loadOp: "clear", storeOp: "store", clearValue: clearColor, view: context.getCurrentTexture().createView() },
             ]
         });
         let group = device.createBindGroup({
@@ -87,13 +87,13 @@ export async function Create() {
         renderPass.setBindGroup(0, group);
         renderPass.setVertexBuffer(0, quadBuffer);
         renderPass.draw(4);
-        renderPass.endPass();
+        renderPass.end();
     };
     canvas.resize = (width, height) => {
         context.configure({
             device: device,
             format: format,
-            size: { width: width, height: height }
+            // size: { width: width, height: height }
         });
         canvas.width = width;
         canvas.height = height;
@@ -113,8 +113,9 @@ export async function NewCompute(src) {
     let pipeline = device.createComputePipeline({
         compute: {
             module: module,
-            entryPoint: "main"
-        }
+            entryPoint: "main",
+        },
+        layout: "auto",
     });
     compute.Calculate = (input, parameter, result) => {
         let array = [];
@@ -145,8 +146,8 @@ export async function NewCompute(src) {
         let pass = encoder.beginComputePass();
         pass.setPipeline(pipeline);
         pass.setBindGroup(0, group);
-        pass.dispatch(result.width, result.height);
-        pass.endPass();
+        pass.dispatchWorkgroups(result.width, result.height);
+        pass.end();
     };
     return compute;
 }

@@ -32,7 +32,7 @@ export async function Setup(): Promise<void> {
 		throw "copyExternalImageToTexture missing"
 	}
 
-	format = context.getPreferredFormat(adapter)
+	format = window.navigator.gpu.getPreferredCanvasFormat()
 
 	pipeline = device.createRenderPipeline({
 		vertex: {
@@ -58,7 +58,8 @@ export async function Setup(): Promise<void> {
 		primitive: {
 			topology: 'triangle-strip',
 			stripIndexFormat: "uint32"
-		}
+		},
+		layout: "auto",
 	})
 	quadBuffer = CreateBuffer(vertices, GPUBufferUsage.VERTEX)
 	sampler = device.createSampler({
@@ -81,7 +82,6 @@ export async function Create(): Promise<Canvas> {
 	let canvas = document.createElement("canvas") as Canvas
 	let context = canvas.getContext("webgpu") as GPUCanvasContext
 
-	let format = context.getPreferredFormat(adapter)
 	context.configure({
 		device: device,
 		format: format
@@ -90,7 +90,7 @@ export async function Create(): Promise<Canvas> {
 		let renderPass = encoder.beginRenderPass(
 			{
 				colorAttachments: [
-					{ loadValue: clearColor, storeOp: "store", view: context.getCurrentTexture().createView() },
+					{ loadOp: "clear", storeOp: "store", clearValue: clearColor, view: context.getCurrentTexture().createView() },
 				]
 			}
 		)
@@ -110,13 +110,13 @@ export async function Create(): Promise<Canvas> {
 		renderPass.setBindGroup(0, group)
 		renderPass.setVertexBuffer(0, quadBuffer)
 		renderPass.draw(4)
-		renderPass.endPass()
+		renderPass.end()
 	}
 	canvas.resize = (width: number, height: number) => {
 		context.configure({
 			device: device,
 			format: format,
-			size: { width: width, height: height }
+			// size: { width: width, height: height }
 		})
 		canvas.width = width
 		canvas.height = height
@@ -144,8 +144,9 @@ export async function NewCompute(src: string): Promise<Compute> {
 	let pipeline = device.createComputePipeline({
 		compute: {
 			module: module,
-			entryPoint: "main"
-		}
+			entryPoint: "main",
+		},
+		layout: "auto",
 	})
 
 	compute.Calculate = (input: Texture[], parameter: GPUBuffer | null, result: Texture) => {
@@ -177,8 +178,8 @@ export async function NewCompute(src: string): Promise<Compute> {
 		let pass = encoder.beginComputePass()
 		pass.setPipeline(pipeline)
 		pass.setBindGroup(0, group)
-		pass.dispatch(result.width, result.height)
-		pass.endPass()
+		pass.dispatchWorkgroups(result.width, result.height)
+		pass.end()
 	}
 	return compute
 }
