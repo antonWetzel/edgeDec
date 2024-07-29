@@ -36,7 +36,7 @@ export class Shader extends Graph.Box {
 		body.innerHTML = name
 		this.maxInputs = info.inputs
 		if (info.parameter.length > 0) {
-			body.title = "Click to edit parameter"
+			body.title = "Control+Left to edit parameter"
 		} else {
 			body.title = "No parameter to edit"
 		}
@@ -86,9 +86,14 @@ export class Shader extends Graph.Box {
 					div.append(bot)
 					bot.append(input)
 					bot.append(number)
-					input.oninput = () => {
+					input.oninput = async () => {
 						parameter[i] = parseFloat(input.value)
 						number.innerText = input.value
+						this.buffer = GPU.CreateBuffer(new Float32Array(parameter), GPUBufferUsage.UNIFORM)
+						this.recursiveReset()
+						GPU.Start()
+						await this.recursiveUpdate()
+						GPU.End()
 					}
 					div.onclick = (ev) => { ev.stopPropagation() }
 					scroll.appendChild(div)
@@ -96,11 +101,6 @@ export class Shader extends Graph.Box {
 
 				area.onclick = async () => {
 					area.remove()
-					this.buffer = GPU.CreateBuffer(new Float32Array(parameter), GPUBufferUsage.UNIFORM)
-					this.recursiveReset()
-					GPU.Start()
-					await this.recursiveUpdate()
-					GPU.End()
 				}
 			}
 		}
@@ -195,4 +195,3 @@ export async function Custom() {
 	}
 	input.click()
 }
-
